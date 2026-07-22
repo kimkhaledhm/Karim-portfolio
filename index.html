@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio — Graphic Design Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#141414;
+    --accent:#c6ff02;
+    --dark2:#031e19;
+    --text:#f2f2f2;
+    --muted:rgba(242,242,242,0.55);
+    --faint:rgba(242,242,242,0.32);
+    --glass:rgba(242,242,242,0.045);
+    --glass-strong:rgba(242,242,242,0.08);
+    --border:rgba(242,242,242,0.10);
+    --ease:cubic-bezier(.16,.84,.44,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;min-height:100vh;position:relative;}
+  ::selection{background:var(--accent);color:var(--dark2);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;}
+  img{display:block;max-width:100%;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:400;letter-spacing:-0.01em;}
+
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .spotlight{position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(600px circle at var(--mx,50%) var(--my,30%), rgba(198,255,2,0.06), transparent 60%);
+    transition:background 0.15s var(--ease);}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:28px 5vw;
+    transition:background 0.4s var(--ease), backdrop-filter 0.4s var(--ease), padding 0.4s var(--ease);}
+  nav.scrolled{background:rgba(20,20,20,0.72);backdrop-filter:blur(14px);padding:18px 5vw;border-bottom:1px solid var(--border);}
+  .brand{font-family:'Fraunces',serif;font-size:20px;font-weight:500;letter-spacing:0.01em;display:flex;align-items:center;gap:10px;}
+  .brand::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px var(--accent);}
+  .nav-right{display:flex;align-items:center;gap:22px;}
+  .nav-link{font-size:13px;letter-spacing:0.04em;color:var(--muted);transition:color 0.3s;}
+  .nav-link:hover{color:var(--text);}
+  .admin-toggle{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.06em;border:1px solid var(--border);padding:8px 14px;border-radius:100px;color:var(--muted);transition:all 0.3s var(--ease);}
+  .admin-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .admin-toggle.on{background:var(--accent);color:var(--dark2);border-color:var(--accent);font-weight:700;}
+  .logout-link{font-family:'Space Mono',monospace;font-size:10px;color:var(--faint);}
+  .logout-link:hover{color:#ff8080;}
+  .share-toast{
+    position:fixed;top:88px;right:5vw;z-index:600;background:#0f0f0f;border:1px solid var(--accent);
+    border-radius:12px;padding:14px 20px;font-size:12.5px;color:var(--text);max-width:280px;
+    box-shadow:0 20px 50px -12px rgba(0,0,0,0.6);opacity:0;transform:translateY(-8px);pointer-events:none;
+    transition:opacity 0.35s var(--ease), transform 0.35s var(--ease);
+  }
+  .share-toast.show{opacity:1;transform:translateY(0);}
+
+  main{position:relative;z-index:3;}
+  .view{display:none;}
+  .view.active{display:block;animation:fadeIn 0.6s var(--ease);}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 5vw;position:relative;}
+  .hero-eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);opacity:0;animation:reveal 1s var(--ease) 0.1s forwards;display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+  .hero-eyebrow .line{width:40px;height:1px;background:var(--accent);}
+  .hero h1{font-size:clamp(48px, 8.4vw, 128px);line-height:0.98;font-weight:400;opacity:0;animation:reveal 1.1s var(--ease) 0.25s forwards;}
+  .hero h1 em{font-style:italic;font-weight:300;color:var(--accent);}
+  .hero p.desc{max-width:480px;margin-top:32px;font-size:17px;line-height:1.7;color:var(--muted);opacity:0;animation:reveal 1s var(--ease) 0.5s forwards;}
+  @keyframes reveal{from{opacity:0;transform:translateY(24px);filter:blur(6px);}to{opacity:1;transform:translateY(0);filter:blur(0);}}
+  .hero-cta{display:flex;gap:16px;margin-top:44px;opacity:0;animation:reveal 1s var(--ease) 0.7s forwards;flex-wrap:wrap;}
+  .btn{padding:16px 30px;border-radius:14px;font-size:13px;letter-spacing:0.03em;display:inline-flex;align-items:center;gap:8px;transition:all 0.4s var(--ease);}
+  .btn-primary{background:var(--accent);color:var(--dark2);font-weight:600;border-radius:100px;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px rgba(198,255,2,0.5);}
+  .btn-ghost{border:1px solid var(--border);color:var(--text);border-radius:100px;}
+  .btn-ghost:hover{border-color:var(--text);background:var(--glass);}
+  .btn-neon{
+    border:1.5px solid var(--accent);color:var(--text);background:rgba(198,255,2,0.04);
+    border-radius:14px;font-weight:500;box-shadow:0 0 0px rgba(198,255,2,0);
+  }
+  .btn-neon:hover{background:var(--accent);color:var(--dark2);box-shadow:0 0 28px rgba(198,255,2,0.45);transform:translateY(-2px);}
+  .scroll-cue{position:absolute;bottom:48px;left:5vw;display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:11px;color:var(--faint);opacity:0;animation:reveal 1s var(--ease) 1s forwards;}
+  .scroll-cue .dot{width:1px;height:34px;background:linear-gradient(var(--faint),transparent);position:relative;overflow:hidden;}
+  .scroll-cue .dot::after{content:'';position:absolute;top:-34px;left:0;width:100%;height:100%;background:var(--accent);animation:scrollLine 2.2s ease-in-out infinite;}
+  @keyframes scrollLine{0%{transform:translateY(0);}100%{transform:translateY(68px);}}
+
+  .section{padding:140px 5vw;position:relative;}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;gap:24px;flex-wrap:wrap;}
+  .section-eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:block;}
+  .section-title{font-size:clamp(32px,4.2vw,56px);font-weight:400;max-width:640px;}
+  .section-sub{max-width:360px;color:var(--muted);font-size:14px;line-height:1.7;}
+
+  /* analytics strip */
+  .analytics-strip{max-width:1200px;margin:110px auto 0;padding:0 5vw;display:none;}
+  .analytics-strip.show{display:block;}
+  .analytics-strip .a-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .analytics-strip .a-head span{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);}
+  .analytics-strip .a-head .dot2{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .a-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .a-card{border:1px solid var(--border);background:var(--glass);border-radius:14px;padding:20px 22px;}
+  .a-card .num{font-family:'Fraunces',serif;font-size:34px;color:var(--accent);}
+  .a-card .lbl{font-size:12px;color:var(--muted);margin-top:6px;}
+
+  /* category cards */
+  .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .cat-card{position:relative;border-radius:20px;overflow:hidden;height:440px;border:1px solid var(--border);background:linear-gradient(160deg, var(--dark2), #0a0a0a);cursor:pointer;transition:transform 0.6s var(--ease), border-color 0.6s var(--ease);}
+  .cat-card:hover{transform:translateY(-8px);border-color:rgba(198,255,2,0.4);}
+  .cat-card .glow{position:absolute;inset:0;background:radial-gradient(400px circle at 50% 100%, rgba(198,255,2,0.16), transparent 70%);opacity:0;transition:opacity 0.5s;}
+  .cat-card:hover .glow{opacity:1;}
+  .cat-card .cat-num{position:absolute;top:28px;left:28px;font-family:'Space Mono',monospace;font-size:12px;color:var(--faint);}
+  .cat-card .cat-art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.9;}
+  .cat-card .cat-body{position:absolute;bottom:0;left:0;right:0;padding:32px;}
+  .cat-card h3{font-size:30px;font-weight:400;margin-bottom:10px;}
+  .cat-card p{font-size:13px;color:var(--muted);}
+  .cat-card .arrow{position:absolute;top:28px;right:28px;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.4s var(--ease);}
+  .cat-card:hover .arrow{background:var(--accent);border-color:var(--accent);transform:rotate(45deg);}
+  .cat-card:hover .arrow svg{stroke:var(--dark2);}
+  .cat-card .arrow svg{stroke:var(--text);transition:stroke 0.3s;}
+
+  .start-project-wrap{display:flex;justify-content:center;padding:0 5vw 140px;}
+
+  /* final bottom grid: photo + footer/start-project */
+  .final-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;justify-items:center;}
+  .final-photo-box{position:relative;border-radius:20px;overflow:hidden;background:var(--dark2);width:440px;height:440px;max-width:100%;border:none;}
+  .final-photo-box img{width:100%;height:100%;object-fit:cover;display:block;border:none;}
+  .final-right{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+  .final-footer-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+  .final-footer-block p#footerText{font-size:14px;color:var(--muted);}
+  .final-footer-block p.tagline{font-size:12px;color:var(--faint);margin-top:6px;}
+
+  .page-top{padding:130px 5vw 60px;}
+  .back-link{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:36px;transition:color 0.3s, gap 0.3s;}
+  .back-link:hover{color:var(--accent);gap:12px;}
+  .page-title{font-size:clamp(38px,6vw,80px);}
+  .page-desc{max-width:520px;color:var(--muted);margin-top:20px;line-height:1.7;font-size:15px;}
+
+  /* admin panel */
+  .admin-panel{max-width:1100px;margin:0 auto 60px;padding:28px 5vw;background:var(--glass);border:1px dashed rgba(198,255,2,0.35);border-radius:18px;display:none;}
+  .admin-panel.show{display:block;animation:fadeIn 0.4s var(--ease);}
+  .admin-panel h4{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;margin-bottom:18px;}
+  .admin-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:11px;color:var(--faint);font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .field input, .field textarea{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;transition:border-color 0.3s;width:100%;}
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--accent);}
+  .field textarea{resize:vertical;min-height:70px;}
+  .field.span2{grid-column:span 2;}
+  .admin-actions{display:flex;gap:10px;margin-top:18px;align-items:center;}
+  .btn-small{padding:11px 22px;border-radius:100px;font-size:12px;font-family:'Space Mono',monospace;background:var(--accent);color:var(--dark2);font-weight:700;transition:transform 0.3s;}
+  .btn-small:hover{transform:translateY(-2px);}
+  .btn-small.secondary{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .save-msg{font-size:11px;color:var(--accent);font-family:'Space Mono',monospace;opacity:0;transition:opacity 0.3s;}
+  .save-msg.show{opacity:1;}
+
+  .del-btn{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(20,20,20,0.85);border:1px solid var(--border);color:var(--text);display:none;align-items:center;justify-content:center;font-size:14px;z-index:5;transition:all 0.25s;}
+  body.admin-on .del-btn, body.admin-on .edit-btn, body.admin-on .move-btn{display:flex;}
+  .del-btn:hover{background:#ff4747;border-color:#ff4747;}
+  .edit-btn{position:absolute;top:10px;right:46px;width:28px;height:28px;border-radius:50%;background:rgba(20,20,20,0.85);border:1px solid var(--border);color:var(--text);display:none;align-items:center;justify-content:center;font-size:12px;z-index:5;transition:all 0.25s;}
+  .edit-btn:hover{background:var(--accent);border-color:var(--accent);color:var(--dark2);}
+  .move-btn{position:absolute;top:10px;width:28px;height:28px;border-radius:50%;background:rgba(20,20,20,0.85);border:1px solid var(--border);color:var(--text);display:none;align-items:center;justify-content:center;font-size:12px;z-index:5;transition:all 0.25s;}
+  .move-btn:hover{background:var(--text);color:var(--dark2);}
+  .move-btn.up{left:10px;}
+  .move-btn.down{left:46px;}
+
+  /* image input widget */
+  .img-input{border:1px solid var(--border);border-radius:12px;padding:14px;background:rgba(255,255,255,0.02);}
+  .img-tabs{display:flex;gap:6px;margin-bottom:12px;}
+  .img-tab{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:0.04em;padding:7px 13px;border-radius:100px;border:1px solid var(--border);color:var(--muted);transition:all 0.25s;}
+  .img-tab.active{background:var(--accent);color:var(--dark2);border-color:var(--accent);font-weight:700;}
+  .upload-drop{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--border);border-radius:10px;padding:20px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all 0.25s;text-align:center;}
+  .upload-drop:hover{border-color:var(--accent);color:var(--accent);background:rgba(198,255,2,0.03);}
+  .url-row{display:flex;gap:8px;}
+  .url-row input{flex:1;}
+  .img-thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+  .img-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;}
+  .img-thumb .thumb-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .img-thumb .thumb-x:hover{background:#ff4747;}
+  .img-thumb.processing::after{content:'';position:absolute;inset:0;background:rgba(3,30,25,0.55);}
+  .img-thumb.processing::before{content:'⋯';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:16px;z-index:2;animation:pulse 1s infinite;}
+  .img-thumb.error{border-color:#ff4747;}
+  .img-thumb.error::after{content:'';position:absolute;inset:0;background:rgba(255,71,71,0.25);}
+  .img-thumb.error::before{content:'!';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ff8080;font-size:16px;font-weight:700;z-index:2;}
+  @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
+  /* logos marquee */
+  .marquee-row{position:relative;width:100%;overflow:hidden;padding:16px 0;mask-image:linear-gradient(90deg, transparent, black 8%, black 92%, transparent);}
+  .marquee-track{display:flex;gap:48px;width:max-content;align-items:center;}
+  .marquee-track.left{animation:scrollLeft linear infinite;}
+  .marquee-track.right{animation:scrollRight linear infinite;}
+  @keyframes scrollLeft{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  @keyframes scrollRight{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+  .logo-item{flex:none;display:flex;align-items:center;justify-content:center;height:64px;padding:10px 18px;border-radius:12px;border:1px solid transparent;transition:transform 0.4s var(--ease), border-color 0.4s, filter 0.4s;cursor:pointer;}
+  .logo-item img{max-height:64px;max-width:120px;width:auto;height:auto;object-fit:contain;filter:grayscale(20%) brightness(0.95);transition:filter 0.4s;}
+  .logo-item:hover{transform:scale(1.14);border-color:rgba(198,255,2,0.3);filter:drop-shadow(0 0 18px rgba(198,255,2,0.35));}
+  .logo-item:hover img{filter:grayscale(0%) brightness(1.1);}
+  .logos-empty, .empty-state{text-align:center;padding:80px 20px;color:var(--faint);font-size:14px;}
+
+  /* branding grid */
+  .brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .brand-card{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--border);aspect-ratio:4/5;cursor:pointer;background:var(--dark2);}
+  .brand-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.7s var(--ease), filter 0.5s;}
+  .brand-card:hover img{transform:scale(1.06);}
+  .brand-card .overlay{position:absolute;inset:0;background:linear-gradient(0deg, rgba(3,30,25,0.92) 0%, rgba(3,30,25,0.1) 55%, transparent 80%);display:flex;flex-direction:column;justify-content:flex-end;padding:26px;}
+  .brand-card .cat-tag{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+  .brand-card h3{font-size:22px;font-weight:400;}
+  .brand-card .client{font-size:12px;color:var(--muted);margin-top:6px;}
+
+  .brand-hero-img{width:100%;height:70vh;object-fit:cover;border-radius:20px;margin-top:20px;}
+  .brand-meta-row{display:flex;gap:60px;margin:56px 0;flex-wrap:wrap;padding:36px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .meta-block{flex:1;min-width:200px;}
+  .meta-block h5{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+  .meta-block p{font-size:14px;color:var(--muted);line-height:1.7;}
+  .palette-swatches{display:flex;gap:10px;margin-top:6px;}
+  .swatch{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);}
+  .story-block{max-width:720px;margin:56px 0;}
+  .story-block h4{font-size:26px;margin-bottom:16px;font-weight:400;}
+  .story-block p{color:var(--muted);line-height:1.85;font-size:15px;}
+  .gallery{columns:2;column-gap:20px;margin-top:40px;}
+  .gallery img{width:100%;border-radius:14px;margin-bottom:20px;break-inside:avoid;transition:filter 0.5s;}
+  .gallery img:hover{filter:brightness(1.08);}
+
+  /* social carousel */
+  .carousel-wrap{position:relative;max-width:1000px;margin:0 auto;}
+  .carousel-track{display:flex;gap:26px;overflow-x:hidden;scroll-behavior:smooth;padding:10px 0;}
+  .post-card{flex:none;width:290px;aspect-ratio:1080/1350;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer;background:var(--dark2);}
+  .post-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s var(--ease);}
+  .post-card:hover img{transform:scale(1.08);}
+  .post-card .shade{position:absolute;inset:0;box-shadow:inset 0 -80px 60px -20px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.4s;}
+  .post-card:hover .shade{opacity:1;}
+  .carousel-arrows{display:flex;justify-content:center;gap:16px;margin-top:36px;}
+  .arrow-btn{width:52px;height:52px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.35s var(--ease);}
+  .arrow-btn:hover{background:var(--accent);border-color:var(--accent);}
+  .arrow-btn:hover svg{stroke:var(--dark2);}
+  .arrow-btn svg{stroke:var(--text);transition:stroke 0.3s;}
+
+  /* contact page */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:20px;}
+  .contact-card{border:1px solid var(--border);border-radius:18px;padding:30px;background:var(--glass);}
+  .contact-card h5{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+  .contact-link-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+  .contact-link-row:last-child{border-bottom:none;}
+  .contact-link-row a{font-size:15px;transition:color 0.3s;}
+  .contact-link-row a:hover{color:var(--accent);}
+  .social-badges{display:flex;flex-wrap:wrap;gap:12px;}
+  .social-badge{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid var(--border);border-radius:100px;font-size:13px;transition:all 0.3s;}
+  .social-badge:hover{border-color:var(--accent);color:var(--accent);}
+  .social-badge .mono{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;flex:none;}
+  .service-box{
+    margin-top:40px;border:1px solid rgba(198,255,2,0.3);background:rgba(198,255,2,0.03);
+    border-radius:20px;padding:40px;max-width:640px;
+  }
+  .service-box h4{font-size:24px;margin-bottom:8px;}
+  .service-box p.note{color:var(--muted);font-size:13px;margin-bottom:28px;}
+  .service-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .service-form .field.full{grid-column:span 2;}
+  .service-status{margin-top:16px;font-size:13px;font-family:'Space Mono',monospace;min-height:18px;}
+  .service-status.ok{color:var(--accent);}
+  .service-status.err{color:#ff8080;}
+
+  /* admin gate modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(3,10,8,0.88);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;z-index:3000;padding:24px;}
+  .modal-overlay.show{display:flex;animation:fadeIn 0.3s var(--ease);}
+  .modal-box{width:100%;max-width:380px;border:1px solid var(--border);border-radius:18px;background:#0f0f0f;padding:32px;}
+  .modal-box h4{font-size:20px;margin-bottom:6px;}
+  .modal-box p.sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.6;}
+  .modal-box .field{margin-bottom:14px;}
+  .modal-err{color:#ff8080;font-size:12px;font-family:'Space Mono',monospace;min-height:16px;margin-top:4px;}
+
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(3,10,8,0.88);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;z-index:2000;padding:6vh 4vw;}
+  .lightbox.show{display:flex;animation:fadeIn 0.35s var(--ease);}
+  .lightbox img{max-width:100%;max-height:88vh;border-radius:12px;box-shadow:0 40px 100px -20px rgba(0,0,0,0.7);}
+  .lightbox-close{position:fixed;top:32px;right:5vw;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}
+  .lightbox-close:hover{background:var(--accent);border-color:var(--accent);color:var(--dark2);}
+
+  /* footer */
+  footer{padding:60px 5vw;border-top:1px solid var(--border);}
+  .footer-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+  footer p{font-size:12px;color:var(--faint);font-family:'Space Mono',monospace;}
+  .footer-edit{max-width:1100px;margin:0 auto 26px;display:none;gap:10px;}
+  .footer-edit.show{display:flex;}
+  .footer-edit input{flex:1;}
+
+  [data-reveal]{opacity:0;transform:translateY(26px);transition:opacity 0.9s var(--ease), transform 0.9s var(--ease);}
+  [data-reveal].in{opacity:1;transform:translateY(0);}
+
+  @media (max-width:900px){
+    .cat-grid{grid-template-columns:1fr;}
+    .brand-grid{grid-template-columns:1fr 1fr;}
+    .gallery{columns:1;}
+    .brand-meta-row{gap:30px;}
+    .nav-right{gap:12px;}
+    .nav-link{display:none;}
+    .contact-grid{grid-template-columns:1fr;}
+    .a-grid{grid-template-columns:1fr 1fr;}
+    .final-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:560px){
+    .brand-grid{grid-template-columns:1fr;}
+    .section{padding:100px 6vw;}
+    .admin-form, .service-form{grid-template-columns:1fr;}
+    .field.span2, .service-form .field.full{grid-column:span 1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="share-toast" id="shareToast"></div>
+<div class="grain"></div>
+<div class="spotlight" id="spotlight"></div>
+<div class="vignette"></div>
+
+<nav id="nav">
+  <a href="#home" class="brand">Marisol Vey</a>
+  <div class="nav-right">
+    <a href="#logos" class="nav-link">Logos</a>
+    <a href="#branding" class="nav-link">Branding</a>
+    <a href="#social" class="nav-link">Social</a>
+    <a href="#contact" class="nav-link">Contact</a>
+    <button class="admin-toggle" id="shareBtn" style="display:none;">Share Portfolio</button>
+    <button class="admin-toggle" id="adminToggle">Admin</button>
+    <a href="#" class="logout-link" id="logoutLink" style="display:none;">Log out</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ================= HOME ================= -->
+  <section class="view active" id="view-home">
+    <div class="admin-panel" id="homeTextAdmin">
+      <h4>Edit Homepage Text</h4>
+      <div class="admin-form">
+        <div class="field span2"><label>Eyebrow Label</label><input type="text" id="hEyebrow"></div>
+        <div class="field span2"><label>Headline — use || for a line break, *word* to highlight it in accent</label><textarea id="hHeadline"></textarea></div>
+        <div class="field span2"><label>Description</label><textarea id="hDesc"></textarea></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small" id="homeTextSaveBtn">Save Text</button><span class="save-msg" id="homeTextSaveMsg">Saved</span></div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-eyebrow"><span class="line"></span> <span id="heroEyebrowText">Graphic Designer &amp; Visual Storyteller</span></div>
+      <h1 id="heroHeadline">Design that<br>holds its <em>silence</em>.</h1>
+      <p class="desc" id="heroDesc">I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects.</p>
+      <div class="hero-cta">
+        <a href="#branding" class="btn btn-primary">View Selected Work</a>
+      </div>
+      <div class="scroll-cue"><span class="dot"></span> Scroll</div>
+    </div>
+
+    <div class="analytics-strip" id="analyticsStrip">
+      <div class="a-head"><span class="dot2"></span><span>Admin Analytics — visible only to you</span></div>
+      <div class="a-grid">
+        <div class="a-card"><div class="num" id="statVisitors">–</div><div class="lbl">Total Visitors</div></div>
+        <div class="a-card"><div class="num" id="statUnique">–</div><div class="lbl">Unique Visitors</div></div>
+        <div class="a-card"><div class="num" id="statProjectViews">–</div><div class="lbl">Project Detail Views</div></div>
+        <div class="a-card"><div class="num" id="statContactClicks">–</div><div class="lbl">Contact Button Clicks</div></div>
+      </div>
+    </div>
+
+    <div class="section" id="categories">
+      <div class="section-head" data-reveal>
+        <div>
+          <span class="section-eyebrow">Selected Work</span>
+          <h2 class="section-title">Three ways into the archive.</h2>
+        </div>
+        <p class="section-sub">Every mark, brand, and post begins the same way — with restraint. Choose a category to step inside.</p>
+      </div>
+
+      <div class="cat-grid">
+        <a href="#logos" class="cat-card" data-reveal>
+          <div class="glow"></div><span class="cat-num">01</span>
+          <span class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
+          <div class="cat-art" id="artLogos"></div>
+          <div class="cat-body"><h3>Logos</h3><p>Marks built to survive a single glance.</p></div>
+        </a>
+        <a href="#branding" class="cat-card" data-reveal>
+          <div class="glow"></div><span class="cat-num">02</span>
+          <span class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
+          <div class="cat-art" id="artBranding"></div>
+          <div class="cat-body"><h3>Branding</h3><p>Full identity systems, story to shelf.</p></div>
+        </a>
+        <a href="#social" class="cat-card" data-reveal>
+          <div class="glow"></div><span class="cat-num">03</span>
+          <span class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
+          <div class="cat-art" id="artSocial"></div>
+          <div class="cat-body"><h3>Social Media Posts</h3><p>Feeds designed like short films.</p></div>
+        </a>
+      </div>
+    </div>
+
+    <div class="start-project-wrap">
+      <a href="#contact" class="btn btn-neon" id="startProjectBtn2" style="padding:20px 48px;font-size:14px;">Start a Project</a>
+    </div>
+
+    <div class="admin-panel" id="photoAdmin">
+      <h4>Personal Photo</h4>
+      <div id="photoImgInputHost"></div>
+      <div class="admin-actions"><button class="btn-small" id="photoSaveBtn">Save Photo</button><span class="save-msg" id="photoSaveMsg">Saved</span></div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="final-grid">
+        <div class="final-photo-box">
+          <img id="personalPhotoImg" src="" alt="Personal photo">
+        </div>
+        <div class="final-right">
+          <div class="final-footer-block">
+            <div class="footer-edit" id="footerEdit">
+              <input type="text" id="footerTextInput" placeholder="Footer text...">
+              <button class="btn-small" id="footerSaveBtn">Save</button>
+            </div>
+            <span class="final-footer-label">Footer</span>
+            <p id="footerText">© 2026 Marisol Vey — Graphic Design Studio</p>
+            <p class="tagline">Built for people who notice details.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LOGOS ================= -->
+  <section class="view" id="view-logos">
+    <div class="page-top">
+      <a href="#home" class="back-link">← Back to work</a>
+      <h1 class="page-title">Logos</h1>
+      <p class="page-desc">A running archive of marks — scroll and hover. Click any logo to view it in full.</p>
+    </div>
+
+    <div class="admin-panel" id="logoAdmin">
+      <h4>Add logos</h4>
+      <div id="logoImgInputHost"></div>
+      <div class="admin-actions"><button class="btn-small" id="logoAddBtn">Add to Archive</button><span class="save-msg" id="logoSaveMsg">Saved</span></div>
+    </div>
+
+    <div id="logoRows"></div>
+  </section>
+
+  <!-- ================= BRANDING LIST ================= -->
+  <section class="view" id="view-branding">
+    <div class="page-top">
+      <a href="#home" class="back-link">← Back to work</a>
+      <h1 class="page-title">Branding</h1>
+      <p class="page-desc">Full identity projects — cover to case study. Click a project to open it. Use the arrows on each card to reorder.</p>
+    </div>
+
+    <div class="admin-panel" id="brandAdmin">
+      <h4 id="brandFormTitle">Add a branding project</h4>
+      <form class="admin-form" id="brandForm">
+        <div class="field"><label>Project Title</label><input type="text" id="bTitle" required></div>
+        <div class="field"><label>Client (optional)</label><input type="text" id="bClient"></div>
+        <div class="field span2"><label>Cover Image</label><div id="bCoverHost"></div></div>
+        <div class="field span2"><label>Gallery Images</label><div id="bGalleryHost"></div></div>
+        <div class="field span2"><label>Short Description</label><textarea id="bDesc"></textarea></div>
+        <div class="field span2"><label>Branding Story</label><textarea id="bStory"></textarea></div>
+        <div class="field span2"><label>Design Process</label><textarea id="bProcess"></textarea></div>
+        <div class="field"><label>Color Palette (hex, comma separated)</label><input type="text" id="bPalette" placeholder="#141414, #c6ff02"></div>
+        <div class="field"><label>Typography</label><input type="text" id="bType" placeholder="Fraunces / Inter"></div>
+        <div class="field span2"><label>Mockup Images</label><div id="bMockupsHost"></div></div>
+      </form>
+      <div class="admin-actions">
+        <button class="btn-small" id="brandSaveBtn">Add Project</button>
+        <button class="btn-small secondary" id="brandCancelBtn" style="display:none;">Cancel Edit</button>
+        <span class="save-msg" id="brandSaveMsg">Saved</span>
+      </div>
+    </div>
+
+    <div class="brand-grid" id="brandGrid"></div>
+  </section>
+
+  <!-- ================= BRANDING DETAIL ================= -->
+  <section class="view" id="view-branding-detail">
+    <div class="page-top" style="padding-bottom:0;">
+      <a href="#branding" class="back-link">← All branding projects</a>
+      <span class="section-eyebrow" id="dClient">Case Study</span>
+      <h1 class="page-title" id="dTitle"></h1>
+      <p class="page-desc" id="dDesc"></p>
+      <img class="brand-hero-img" id="dCover" src="" alt="">
+    </div>
+    <div class="section" style="padding-top:0;">
+      <div class="brand-meta-row">
+        <div class="meta-block"><h5>Color Palette</h5><div class="palette-swatches" id="dPalette"></div></div>
+        <div class="meta-block"><h5>Typography</h5><p id="dType"></p></div>
+        <div class="meta-block"><h5>Client</h5><p id="dClient2"></p></div>
+      </div>
+      <div class="story-block"><h4>The Story</h4><p id="dStory"></p></div>
+      <div class="story-block"><h4>Design Process</h4><p id="dProcess"></p></div>
+      <div class="gallery" id="dGallery"></div>
+      <div style="margin-top:60px;">
+        <h4 class="story-block" style="margin-bottom:20px;">Mockups</h4>
+        <div class="gallery" id="dMockups"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SOCIAL ================= -->
+  <section class="view" id="view-social">
+    <div class="page-top">
+      <a href="#home" class="back-link">← Back to work</a>
+      <h1 class="page-title">Social Media Posts</h1>
+      <p class="page-desc">A carousel of recent posts, 1080×1350. Click through with the arrows, or click a post to view it larger.</p>
+    </div>
+
+    <div class="admin-panel" id="socialAdmin">
+      <h4>Add posts</h4>
+      <div id="socialImgInputHost"></div>
+      <div class="admin-actions"><button class="btn-small" id="socialAddBtn">Add to Feed</button><span class="save-msg" id="socialSaveMsg">Saved</span></div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="carousel-wrap">
+        <div class="carousel-track" id="carouselTrack"></div>
+        <div class="carousel-arrows">
+          <button class="arrow-btn" id="prevBtn" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button class="arrow-btn" id="nextBtn" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section class="view" id="view-contact">
+    <div class="page-top">
+      <a href="#home" class="back-link">← Back to work</a>
+      <h1 class="page-title">Start a Project</h1>
+      <p class="page-desc">Reach out directly, or send over the details below — it lands straight in my inbox.</p>
+    </div>
+
+    <div class="admin-panel" id="contactAdmin">
+      <h4>Manage contact channels</h4>
+      <div class="admin-form">
+        <div class="field"><label>WhatsApp Number (with country code)</label><input type="text" id="cWhatsapp" placeholder="e.g. 15551234567"></div>
+        <div class="field"><label>Email Address</label><input type="email" id="cEmail" placeholder="hello@yourstudio.com"></div>
+        <div class="field"><label>Telegram Bot Token</label><input type="text" id="cTgToken" placeholder="123456:ABC-..."></div>
+        <div class="field"><label>Telegram Chat ID</label><input type="text" id="cTgChat" placeholder="e.g. 987654321"></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small" id="contactSaveBtn">Save Contact Info</button><span class="save-msg" id="contactSaveMsg">Saved</span></div>
+
+      <h4 style="margin-top:28px;">Social media links</h4>
+      <div id="socialLinksAdmin"></div>
+      <div class="admin-form" style="margin-top:14px;">
+        <div class="field"><label>Platform</label><input type="text" id="sPlatform" placeholder="Instagram"></div>
+        <div class="field span2"><label>Profile URL</label><input type="url" id="sUrl" placeholder="https://instagram.com/..."></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small secondary" id="socialLinkAddBtn">Add Social Link</button></div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="contact-grid">
+        <div class="contact-card" data-reveal>
+          <h5>Direct</h5>
+          <div class="contact-link-row"><span>WhatsApp</span><a href="#" id="waLink" target="_blank" rel="noopener">Message on WhatsApp →</a></div>
+          <div class="contact-link-row"><span>Email</span><a href="#" id="emailLink">Send an email →</a></div>
+        </div>
+        <div class="contact-card" data-reveal>
+          <h5>Elsewhere</h5>
+          <div class="social-badges" id="socialBadges"></div>
+        </div>
+      </div>
+
+      <div class="service-box" data-reveal>
+        <h4>Request a Service</h4>
+        <p class="note">Tell me a little about what you need — this goes straight to Telegram so I can reply fast.</p>
+        <form class="service-form" id="serviceForm">
+          <div class="field"><label>Name</label><input type="text" id="svName" required></div>
+          <div class="field"><label>Phone</label><input type="text" id="svPhone" required></div>
+          <div class="field full"><label>Email</label><input type="email" id="svEmail" required></div>
+          <div class="field full"><label>Service Details</label><textarea id="svDetails" required placeholder="What are you looking to create?"></textarea></div>
+        </form>
+        <div class="admin-actions"><button class="btn-small" id="serviceSubmitBtn">Send Request</button></div>
+        <div class="service-status" id="serviceStatus"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box">
+    <h4 id="modalTitle">Admin Login</h4>
+    <p class="sub" id="modalSub">Sign in with your admin account to manage the portfolio.</p>
+    <div class="field"><label>Email</label><input type="email" id="modalEmail" value="kimkhaledgame@gmail.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="modalPass"></div>
+    <div class="modal-err" id="modalErr"></div>
+    <div class="admin-actions">
+      <button class="btn-small" id="modalSubmitBtn">Log In</button>
+      <button class="btn-small secondary" id="modalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  /* ---------------- placeholder art ---------------- */
+  function svgDataUri(inner, w, h){
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${inner}</svg>`;
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  }
+  function seededRand(seed){ let x = Math.sin(seed*9973)*10000; return x - Math.floor(x); }
+  function logoPlaceholder(seed){
+    const shapes = ['circle','triangle','square','diamond'];
+    const s = shapes[Math.floor(seededRand(seed)*shapes.length)];
+    const c = seededRand(seed+1) > 0.5 ? '#c6ff02' : '#f2f2f2';
+    let shape = '';
+    if(s==='circle') shape = `<circle cx="60" cy="60" r="34" fill="none" stroke="${c}" stroke-width="4"/>`;
+    if(s==='triangle') shape = `<polygon points="60,26 96,92 24,92" fill="none" stroke="${c}" stroke-width="4"/>`;
+    if(s==='square') shape = `<rect x="28" y="28" width="64" height="64" fill="none" stroke="${c}" stroke-width="4" transform="rotate(${Math.floor(seededRand(seed+2)*45)} 60 60)"/>`;
+    if(s==='diamond') shape = `<polygon points="60,20 100,60 60,100 20,60" fill="none" stroke="${c}" stroke-width="4"/>`;
+    return svgDataUri(`<rect width="120" height="120" fill="#0a0a0a"/>${shape}`, 120, 120);
+  }
+  function coverPlaceholder(seed, w, h){
+    const c1 = '#031e19', c2 = '#0d2620';
+    const cx = 20 + seededRand(seed)*60, cy = 20 + seededRand(seed+1)*60;
+    return svgDataUri(`
+      <defs><radialGradient id="g${seed}" cx="${cx}%" cy="${cy}%" r="80%">
+        <stop offset="0%" stop-color="#1a3a30"/><stop offset="55%" stop-color="${c2}"/><stop offset="100%" stop-color="${c1}"/>
+      </radialGradient></defs>
+      <rect width="${w}" height="${h}" fill="url(#g${seed})"/>
+      <circle cx="${cx*w/100}" cy="${cy*h/100}" r="${w*0.18}" fill="#c6ff02" opacity="0.14"/>
+    `, w, h);
+  }
+  function postPlaceholder(seed){
+    const w=1080,h=1350;
+    return svgDataUri(`
+      <defs><linearGradient id="pg${seed}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#141414"/><stop offset="60%" stop-color="#031e19"/><stop offset="100%" stop-color="#0a0a0a"/>
+      </linearGradient></defs>
+      <rect width="${w}" height="${h}" fill="url(#pg${seed})"/>
+      <circle cx="${540+seededRand(seed)*200-100}" cy="${500+seededRand(seed+2)*300}" r="260" fill="#c6ff02" opacity="0.08"/>
+      <text x="60" y="${h-70}" font-family="monospace" font-size="22" fill="#c6ff02" opacity="0.7">POST — ${String(seed).padStart(2,'0')}</text>
+    `, w, h);
+  }
+
+  /* ---------------- Supabase client ---------------- */
+  const SUPABASE_URL = 'https://jspldtnwstgmvryqsfxo.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ym3rDPPCHr1Ws07Y6Soo-w_JMBwvkuT';
+  const ADMIN_EMAIL = 'kimkhaledgame@gmail.com';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* ---------------- content storage (Supabase 'content' table) ---------------- */
+  async function loadData(key, fallback){
+    try{
+      const { data, error } = await sb.from('content').select('value').eq('key', key).maybeSingle();
+      if(error || !data) return fallback;
+      return data.value;
+    }catch(e){ return fallback; }
+  }
+  async function saveData(key, value){
+    try{
+      const { error } = await sb.from('content').upsert({ key, value, updated_at: new Date().toISOString() });
+      if(error){ console.error('save failed', error); return false; }
+      return true;
+    }catch(e){ console.error('save failed', e); return false; }
+  }
+
+  /* ---------------- analytics (Supabase 'analytics' table + RPC) ---------------- */
+  async function incrementCounter(key){
+    try{ await sb.rpc('increment_counter', { counter_key: key }); }catch(e){}
+  }
+  async function getCounter(key){
+    try{
+      const { data, error } = await sb.from('analytics').select('count').eq('key', key).maybeSingle();
+      if(error || !data) return 0;
+      return data.count;
+    }catch(e){ return 0; }
+  }
+
+  let logos = [], brandProjects = [], socialPosts = [];
+  let contactInfo = { whatsapp:'', email:'', telegramToken:'', telegramChat:'', socialLinks:[] };
+  let footerTextVal = '© 2026 Marisol Vey — Graphic Design Studio';
+  let homeText = { eyebrow:'Graphic Designer &amp; Visual Storyteller', headline:'Design that||holds its *silence*.', desc:"I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects." };
+  let personalPhotoUrl = '';
+  let activeBrandId = null, editingBrandId = null;
+
+  function seedDefaults(){
+    logos = Array.from({length:14}, (_,i)=>({id:'l'+i, url: logoPlaceholder(i)}));
+    socialPosts = Array.from({length:5}, (_,i)=>({id:'s'+i, url: postPlaceholder(i)}));
+    brandProjects = [
+      { id:'b1', title:'Aureus — Private Bank Identity', client:'Aureus Capital',
+        cover: coverPlaceholder(1, 1600, 1000),
+        gallery: [coverPlaceholder(11,900,1100), coverPlaceholder(12,900,700), coverPlaceholder(13,900,1200)],
+        description:'A quiet identity system for a private bank that prefers not to shout about its money.',
+        story:'Aureus came to us with a name that already sounded old, and a service built entirely on discretion. The brief was to design an identity that felt inherited rather than invented.',
+        process:'We started with the wordmark, cutting away every unnecessary curve until only the essential structure remained.',
+        palette:['#141414','#031e19','#c6ff02','#f2f2f2'], typography:'Fraunces for display, Inter for text',
+        mockups:[coverPlaceholder(14,900,700), coverPlaceholder(15,900,900)] },
+      { id:'b2', title:'Nocturne — Fragrance House', client:'Nocturne Paris',
+        cover: coverPlaceholder(2, 1600, 1000),
+        gallery:[coverPlaceholder(21,900,1200), coverPlaceholder(22,900,800)],
+        description:'Packaging and brand world for a fragrance line built around night gardens.',
+        story:'Nocturne wanted to be found, not advertised. The identity leans on negative space and a single recurring gesture: a thin line of lime-green light.',
+        process:'Every touchpoint began as a photograph of actual darkness before it became a design decision.',
+        palette:['#031e19','#141414','#c6ff02'], typography:'Fraunces Italic for headlines, Space Mono for codes',
+        mockups:[coverPlaceholder(23,900,900)] },
+      { id:'b3', title:'Halide — Architecture Studio', client:'Halide Studio',
+        cover: coverPlaceholder(3, 1600, 1000),
+        gallery:[coverPlaceholder(31,900,900), coverPlaceholder(32,900,1100), coverPlaceholder(33,900,700)],
+        description:'A structural identity for an architecture practice working mostly in concrete and light.',
+        story:'Halide designs buildings that disappear into their landscapes. We wanted a mark that behaved the same way.',
+        process:'The monogram was drawn as a floor plan before it was drawn as a logo.',
+        palette:['#141414','#f2f2f2','#031e19'], typography:'Fraunces for headers, Inter for captions',
+        mockups:[coverPlaceholder(34,900,1000)] }
+    ];
+    contactInfo = {
+      whatsapp:'15551234567', email:'hello@marisolvey.studio', telegramToken:'', telegramChat:'',
+      socialLinks:[
+        {id:'sl1', platform:'Instagram', url:'https://instagram.com/'},
+        {id:'sl2', platform:'LinkedIn', url:'https://linkedin.com/in/'}
+      ]
+    };
+    personalPhotoUrl = coverPlaceholder(99, 1080, 1350);
+  }
+
+  /* ================= IMAGE INPUT WIDGET ================= */
+  function compressAndUpload(file, maxDim, quality){
+    return new Promise((resolve,reject)=>{
+      const objUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = ()=>{
+        let {width,height} = img;
+        if(width>height){ if(width>maxDim){height=Math.round(height*maxDim/width); width=maxDim;} }
+        else { if(height>maxDim){width=Math.round(width*maxDim/height); height=maxDim;} }
+        const canvas=document.createElement('canvas');
+        canvas.width=width;canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        canvas.toBlob(async (blob)=>{
+          URL.revokeObjectURL(objUrl);
+          if(!blob){ reject(new Error('compression failed')); return; }
+          try{
+            const path = `${Date.now()}-${Math.random().toString(36).slice(2,9)}.jpg`;
+            const { error } = await sb.storage.from('portfolio-images').upload(path, blob, { contentType:'image/jpeg', cacheControl:'3600' });
+            if(error) throw error;
+            const { data } = sb.storage.from('portfolio-images').getPublicUrl(path);
+            resolve(data.publicUrl);
+          }catch(e){ reject(e); }
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = ()=>{ URL.revokeObjectURL(objUrl); reject(new Error('load failed')); };
+      img.src = objUrl;
+    });
+  }
+
+  function createImageInput(hostEl, opts){
+    opts = opts || {};
+    const multiple = !!opts.multiple;
+    const maxDim = opts.maxDim || 1200;
+    const quality = opts.quality || 0.82;
+    let entries = []; // {id, value, status, previewUrl}
+    let pending = [];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'img-input';
+    wrap.innerHTML = `
+      <div class="img-tabs">
+        <button type="button" class="img-tab active" data-tab="upload">Upload from device</button>
+        <button type="button" class="img-tab" data-tab="url">Image URL</button>
+      </div>
+      <div class="tab-panel" data-panel="upload">
+        <label class="upload-drop">
+          <input type="file" accept="image/*" ${multiple?'multiple':''} hidden>
+          <span>Click to choose ${multiple ? 'images' : 'an image'} — instant preview, optimized automatically</span>
+        </label>
+      </div>
+      <div class="tab-panel" data-panel="url" style="display:none;">
+        <div class="url-row">
+          <input type="url" placeholder="https://…">
+          <button type="button" class="btn-small secondary">Add</button>
+        </div>
+      </div>
+      <div class="img-thumbs"></div>
+    `;
+    hostEl.innerHTML = '';
+    hostEl.appendChild(wrap);
+
+    const tabs = wrap.querySelectorAll('.img-tab');
+    const panels = wrap.querySelectorAll('.tab-panel');
+    tabs.forEach(t=>t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      panels.forEach(p=> p.style.display = (p.dataset.panel === t.dataset.tab) ? '' : 'none');
+    }));
+
+    const thumbsEl = wrap.querySelector('.img-thumbs');
+    function renderThumbs(){
+      thumbsEl.innerHTML = '';
+      entries.forEach(en=>{
+        const t = document.createElement('div');
+        t.className = 'img-thumb' + (en.status==='processing' ? ' processing' : '') + (en.status==='error' ? ' error' : '');
+        t.innerHTML = `<img src="${en.previewUrl}"><div class="thumb-x" data-id="${en.id}">✕</div>`;
+        t.querySelector('.thumb-x').addEventListener('click', ()=>{
+          entries = entries.filter(e=>e.id!==en.id);
+          renderThumbs();
+        });
+        thumbsEl.appendChild(t);
+      });
+    }
+
+    function addFiles(fileList){
+      const files = Array.from(fileList);
+      if(!multiple){ entries = []; }
+      files.forEach(file=>{
+        const id = 'f'+Date.now()+Math.random().toString(36).slice(2,7);
+        const instantPreview = URL.createObjectURL(file); // instant, no waiting
+        const entry = { id, value: instantPreview, status:'processing', previewUrl: instantPreview };
+        if(!multiple) entries = [entry]; else entries.push(entry);
+        renderThumbs();
+        const p = compressAndUpload(file, maxDim, quality).then(publicUrl=>{
+          URL.revokeObjectURL(instantPreview);
+          entry.value = publicUrl;
+          entry.status = 'ready';
+          entry.previewUrl = publicUrl;
+          renderThumbs();
+        }).catch((err)=>{
+          console.error('upload failed', err);
+          entry.status = 'error';
+          renderThumbs();
+        });
+        pending.push(p);
+      });
+    }
+
+    wrap.querySelector('input[type=file]').addEventListener('change', (e)=>{
+      if(e.target.files && e.target.files.length){ addFiles(e.target.files); e.target.value=''; }
+    });
+    wrap.querySelector('.url-row input').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); addUrlBtn.click(); } });
+    const addUrlBtn = wrap.querySelector('.url-row button');
+    addUrlBtn.addEventListener('click', ()=>{
+      const input = wrap.querySelector('.url-row input');
+      if(!input.value) return;
+      const id = 'u'+Date.now()+Math.random().toString(36).slice(2,7);
+      const entry = { id, value: input.value, status:'ready', previewUrl: input.value };
+      if(!multiple) entries = [entry]; else entries.push(entry);
+      input.value = '';
+      renderThumbs();
+    });
+
+    return {
+      async getValues(){
+        if(pending.length) await Promise.all(pending);
+        pending = [];
+        return entries.filter(e=>e.status==='ready').map(e=>e.value);
+      },
+      setValues(urls){
+        entries = (urls||[]).map(u=>({id:'v'+Math.random().toString(36).slice(2,9), value:u, status:'ready', previewUrl:u}));
+        renderThumbs();
+      },
+      clear(){ entries = []; pending = []; renderThumbs(); }
+    };
+  }
+
+  const logoImgInput = createImageInput(document.getElementById('logoImgInputHost'), {multiple:true, maxDim:500, quality:0.85});
+  const socialImgInput = createImageInput(document.getElementById('socialImgInputHost'), {multiple:true, maxDim:1400, quality:0.85});
+  const bCoverInput = createImageInput(document.getElementById('bCoverHost'), {multiple:false, maxDim:1800, quality:0.82});
+  const bGalleryInput = createImageInput(document.getElementById('bGalleryHost'), {multiple:true, maxDim:1400, quality:0.8});
+  const bMockupsInput = createImageInput(document.getElementById('bMockupsHost'), {multiple:true, maxDim:1400, quality:0.8});
+  const photoImgInput = createImageInput(document.getElementById('photoImgInputHost'), {multiple:false, maxDim:1600, quality:0.85});
+
+  /* ---------------- routing ---------------- */
+  const views = ['home','logos','branding','branding-detail','social','contact'];
+  function route(){
+    let hash = location.hash.replace('#','') || 'home';
+    let base = hash;
+    if(hash.startsWith('project-')){
+      activeBrandId = hash.replace('project-','');
+      base = 'branding-detail';
+      renderBrandDetail(activeBrandId);
+      incrementCounter('projectViews').then(refreshAnalytics);
+    }
+    if(!views.includes(base)) base = 'home';
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+base).classList.add('active');
+    window.scrollTo({top:0});
+    initReveal();
+  }
+  window.addEventListener('hashchange', route);
+
+  const navEl = document.getElementById('nav');
+  window.addEventListener('scroll', ()=> navEl.classList.toggle('scrolled', window.scrollY > 40));
+
+  const spot = document.getElementById('spotlight');
+  window.addEventListener('mousemove', (e)=>{
+    spot.style.setProperty('--mx', e.clientX+'px');
+    spot.style.setProperty('--my', e.clientY+'px');
+  });
+
+  function initReveal(){
+    const els = document.querySelectorAll('[data-reveal]:not(.in)');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); obs.unobserve(en.target); } });
+    }, {threshold:0.15});
+    els.forEach(el=>obs.observe(el));
+  }
+
+  /* ================= ADMIN AUTH (Supabase) ================= */
+  let adminAuthed = false;
+  let adminMode = false;
+
+  async function checkExistingSession(){
+    try{
+      const { data:{ session } } = await sb.auth.getSession();
+      if(session && session.user && session.user.email === ADMIN_EMAIL){
+        adminAuthed = true; adminMode = true; applyAdminUI(); refreshAnalytics();
+      }
+    }catch(e){}
+  }
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'SIGNED_OUT'){ adminAuthed = false; adminMode = false; applyAdminUI(); }
+  });
+
+  function applyAdminUI(){
+    document.body.classList.toggle('admin-on', adminMode);
+    document.getElementById('logoAdmin').classList.toggle('show', adminMode);
+    document.getElementById('brandAdmin').classList.toggle('show', adminMode);
+    document.getElementById('socialAdmin').classList.toggle('show', adminMode);
+    document.getElementById('contactAdmin').classList.toggle('show', adminMode);
+    document.getElementById('footerEdit').classList.toggle('show', adminMode);
+    document.getElementById('homeTextAdmin').classList.toggle('show', adminMode);
+    document.getElementById('photoAdmin').classList.toggle('show', adminMode);
+    document.getElementById('analyticsStrip').classList.toggle('show', adminAuthed);
+    document.getElementById('logoutLink').style.display = adminAuthed ? 'inline' : 'none';
+    document.getElementById('shareBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
+    const btn = document.getElementById('adminToggle');
+    if(adminAuthed){
+      btn.textContent = 'Edit Mode: ' + (adminMode ? 'On' : 'Off');
+      btn.classList.toggle('on', adminMode);
+    } else {
+      btn.textContent = 'Admin';
+      btn.classList.remove('on');
+    }
+  }
+
+  const modal = document.getElementById('adminModal');
+  const modalEmail = document.getElementById('modalEmail');
+  const modalPass = document.getElementById('modalPass');
+  const modalErr = document.getElementById('modalErr');
+
+  function openAdminModal(){
+    modalErr.textContent = '';
+    modalPass.value = '';
+    modal.classList.add('show');
+    modalPass.focus();
+  }
+  document.getElementById('adminToggle').addEventListener('click', async ()=>{
+    if(!adminAuthed){ openAdminModal(); return; }
+    adminMode = !adminMode;
+    applyAdminUI();
+  });
+  document.getElementById('modalCancelBtn').addEventListener('click', ()=> modal.classList.remove('show'));
+  document.getElementById('modalPass').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('modalSubmitBtn').click(); } });
+  document.getElementById('modalSubmitBtn').addEventListener('click', async ()=>{
+    modalErr.textContent = '';
+    const btn = document.getElementById('modalSubmitBtn');
+    const orig = btn.textContent; btn.textContent = 'Logging in…';
+    try{
+      const { data, error } = await sb.auth.signInWithPassword({ email: modalEmail.value.trim(), password: modalPass.value });
+      if(error || !data.session){ modalErr.textContent = 'Incorrect email or password.'; btn.textContent = orig; return; }
+      if(data.session.user.email !== ADMIN_EMAIL){ modalErr.textContent = 'This account is not authorized as admin.'; await sb.auth.signOut(); btn.textContent = orig; return; }
+      adminAuthed = true; adminMode = true;
+      applyAdminUI();
+      refreshAnalytics();
+      modal.classList.remove('show');
+    }catch(e){
+      modalErr.textContent = 'Login failed — check your connection and try again.';
+    }
+    btn.textContent = orig;
+  });
+  function showShareToast(msg){
+    const t = document.getElementById('shareToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._hideTimer);
+    t._hideTimer = setTimeout(()=> t.classList.remove('show'), 3600);
+  }
+  document.getElementById('shareBtn').addEventListener('click', async ()=>{
+    const shareUrl = location.origin + location.pathname + '#home';
+    try{
+      await navigator.clipboard.writeText(shareUrl);
+      showShareToast('Link copied. Anyone you send it to sees the portfolio only — they can\'t edit it without your admin login.');
+    }catch(e){
+      showShareToast('Copy this link to share: ' + shareUrl);
+    }
+  });
+
+  document.getElementById('logoutLink').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    await sb.auth.signOut();
+    adminAuthed = false; adminMode = false;
+    applyAdminUI();
+  });
+
+  /* ================= ANALYTICS ================= */
+  async function refreshAnalytics(){
+    if(!adminAuthed) return;
+    const [v,u,p,c] = await Promise.all([getCounter('pageviews'), getCounter('uniqueVisitors'), getCounter('projectViews'), getCounter('contactClicks')]);
+    document.getElementById('statVisitors').textContent = v;
+    document.getElementById('statUnique').textContent = u;
+    document.getElementById('statProjectViews').textContent = p;
+    document.getElementById('statContactClicks').textContent = c;
+  }
+  async function trackVisit(){
+    incrementCounter('pageviews');
+    try{
+      const seen = localStorage.getItem('mv_hasVisited');
+      if(!seen){
+        localStorage.setItem('mv_hasVisited', 'true');
+        incrementCounter('uniqueVisitors');
+      }
+    }catch(e){ incrementCounter('uniqueVisitors'); }
+  }
+  function trackContactClick(){ incrementCounter('contactClicks').then(refreshAnalytics); }
+
+  /* ================= LOGOS ================= */
+  function renderLogos(){
+    const container = document.getElementById('logoRows');
+    container.innerHTML = '';
+    if(logos.length === 0){ container.innerHTML = '<p class="logos-empty">No logos yet — an admin can add the first one in Edit Mode.</p>'; return; }
+    const rowCount = Math.min(4, Math.max(1, Math.ceil(logos.length / 4)));
+    const perRow = Math.ceil(logos.length / rowCount);
+    const speeds = [42, 55, 38, 60];
+    for(let r=0; r<rowCount; r++){
+      const rowLogos = logos.slice(r*perRow, r*perRow + perRow);
+      if(rowLogos.length === 0) continue;
+      const row = document.createElement('div');
+      row.className = 'marquee-row';
+      const track = document.createElement('div');
+      track.className = 'marquee-track ' + (r % 2 === 0 ? 'left' : 'right');
+      track.style.animationDuration = speeds[r % speeds.length] + 's';
+      [...rowLogos, ...rowLogos].forEach(logo=>{
+        const item = document.createElement('div');
+        item.className = 'logo-item';
+        item.innerHTML = `<img src="${logo.url}" loading="lazy" alt="Logo">`;
+        item.addEventListener('click', ()=>openLightbox(logo.url));
+        track.appendChild(item);
+      });
+      row.appendChild(track);
+      container.appendChild(row);
+    }
+  }
+  document.getElementById('logoAddBtn').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Adding…';
+    const vals = await logoImgInput.getValues();
+    vals.forEach(v=> logos.push({id:'l'+Date.now()+Math.random().toString(36).slice(2,6), url:v}));
+    logoImgInput.clear();
+    await saveData('logos', logos, true);
+    renderLogos();
+    btn.textContent = orig;
+    flashSaved('logoSaveMsg');
+  });
+
+  function flashSaved(id){
+    const el = document.getElementById(id);
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 1600);
+  }
+
+  /* ================= BRANDING ================= */
+  function renderBrandGrid(){
+    const grid = document.getElementById('brandGrid');
+    grid.innerHTML = '';
+    if(brandProjects.length === 0){ grid.innerHTML = '<p class="empty-state">No branding projects yet.</p>'; return; }
+    brandProjects.forEach((p, idx)=>{
+      const card = document.createElement('a');
+      card.href = '#project-'+p.id;
+      card.className = 'brand-card';
+      card.setAttribute('data-reveal','');
+      card.innerHTML = `
+        <img src="${p.cover}" loading="lazy" alt="${p.title}">
+        <div class="overlay"><span class="cat-tag">Branding</span><h3>${p.title}</h3>${p.client ? `<div class="client">${p.client}</div>` : ''}</div>
+        <button class="move-btn up" data-id="${p.id}" title="Move up">↑</button>
+        <button class="move-btn down" data-id="${p.id}" title="Move down" style="left:46px;top:44px;">↓</button>
+        <button class="edit-btn" data-id="${p.id}" title="Edit">✎</button>
+        <button class="del-btn" data-id="${p.id}" title="Delete">✕</button>
+      `;
+      card.querySelector('.del-btn').addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); if(confirm('Delete this branding project?')) deleteBrand(p.id); });
+      card.querySelector('.edit-btn').addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); startEditBrand(p.id); });
+      card.querySelector('.move-btn.up').addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); moveBrand(idx,-1); });
+      card.querySelector('.move-btn.down').addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); moveBrand(idx,1); });
+      grid.appendChild(card);
+    });
+    initReveal();
+  }
+  function moveBrand(idx, dir){
+    const newIdx = idx+dir;
+    if(newIdx<0 || newIdx>=brandProjects.length) return;
+    const tmp = brandProjects[idx]; brandProjects[idx]=brandProjects[newIdx]; brandProjects[newIdx]=tmp;
+    saveData('branding', brandProjects, true);
+    renderBrandGrid();
+  }
+
+  function renderBrandDetail(id){
+    const p = brandProjects.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('dTitle').textContent = p.title;
+    document.getElementById('dDesc').textContent = p.description || '';
+    document.getElementById('dCover').src = p.cover;
+    document.getElementById('dType').textContent = p.typography || '—';
+    document.getElementById('dClient2').textContent = p.client || '—';
+    document.getElementById('dStory').textContent = p.story || '—';
+    document.getElementById('dProcess').textContent = p.process || '—';
+    document.getElementById('dPalette').innerHTML = (p.palette||[]).map(c=>`<span class="swatch" style="background:${c}" title="${c}"></span>`).join('');
+    const gal = document.getElementById('dGallery');
+    gal.innerHTML = (p.gallery||[]).map(u=>`<img src="${u}" loading="lazy" alt="">`).join('');
+    gal.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>openLightbox(img.src)));
+    const mock = document.getElementById('dMockups');
+    mock.innerHTML = (p.mockups||[]).map(u=>`<img src="${u}" loading="lazy" alt="">`).join('');
+    mock.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>openLightbox(img.src)));
+  }
+
+  async function readBrandForm(){
+    return {
+      title: document.getElementById('bTitle').value.trim(),
+      client: document.getElementById('bClient').value.trim(),
+      cover: (await bCoverInput.getValues())[0] || '',
+      gallery: await bGalleryInput.getValues(),
+      description: document.getElementById('bDesc').value.trim(),
+      story: document.getElementById('bStory').value.trim(),
+      process: document.getElementById('bProcess').value.trim(),
+      palette: document.getElementById('bPalette').value.split(',').map(s=>s.trim()).filter(Boolean),
+      typography: document.getElementById('bType').value.trim(),
+      mockups: await bMockupsInput.getValues()
+    };
+  }
+  function clearBrandForm(){
+    ['bTitle','bClient','bDesc','bStory','bProcess','bPalette','bType'].forEach(id=>document.getElementById(id).value='');
+    bCoverInput.clear(); bGalleryInput.clear(); bMockupsInput.clear();
+  }
+  function fillBrandForm(p){
+    document.getElementById('bTitle').value = p.title||'';
+    document.getElementById('bClient').value = p.client||'';
+    document.getElementById('bDesc').value = p.description||'';
+    document.getElementById('bStory').value = p.story||'';
+    document.getElementById('bProcess').value = p.process||'';
+    document.getElementById('bPalette').value = (p.palette||[]).join(', ');
+    document.getElementById('bType').value = p.typography||'';
+    bCoverInput.setValues(p.cover ? [p.cover] : []);
+    bGalleryInput.setValues(p.gallery||[]);
+    bMockupsInput.setValues(p.mockups||[]);
+  }
+
+  document.getElementById('brandSaveBtn').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Saving…';
+    const data = await readBrandForm();
+    if(!data.title || !data.cover){ btn.textContent = orig; alert('Title and a cover image are required.'); return; }
+    if(editingBrandId){
+      const idx = brandProjects.findIndex(x=>x.id===editingBrandId);
+      if(idx>-1) brandProjects[idx] = {...brandProjects[idx], ...data};
+      editingBrandId = null;
+      document.getElementById('brandFormTitle').textContent = 'Add a branding project';
+      btn.textContent = 'Add Project';
+      document.getElementById('brandCancelBtn').style.display = 'none';
+    } else {
+      brandProjects.push({id:'b'+Date.now(), ...data});
+      btn.textContent = orig;
+    }
+    clearBrandForm();
+    await saveData('branding', brandProjects, true);
+    renderBrandGrid();
+    flashSaved('brandSaveMsg');
+  });
+  document.getElementById('brandCancelBtn').addEventListener('click', ()=>{
+    editingBrandId = null; clearBrandForm();
+    document.getElementById('brandFormTitle').textContent = 'Add a branding project';
+    document.getElementById('brandSaveBtn').textContent = 'Add Project';
+    document.getElementById('brandCancelBtn').style.display = 'none';
+  });
+  function startEditBrand(id){
+    const p = brandProjects.find(x=>x.id===id);
+    if(!p) return;
+    editingBrandId = id;
+    fillBrandForm(p);
+    document.getElementById('brandFormTitle').textContent = 'Edit branding project';
+    document.getElementById('brandSaveBtn').textContent = 'Save Changes';
+    document.getElementById('brandCancelBtn').style.display = 'inline-flex';
+    document.getElementById('brandAdmin').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  function deleteBrand(id){
+    brandProjects = brandProjects.filter(p=>p.id!==id);
+    saveData('branding', brandProjects, true);
+    renderBrandGrid();
+  }
+
+  /* ================= SOCIAL ================= */
+  function renderSocial(){
+    const track = document.getElementById('carouselTrack');
+    track.innerHTML = '';
+    if(socialPosts.length === 0){ track.innerHTML = '<p class="empty-state">No posts yet.</p>'; return; }
+    socialPosts.forEach(post=>{
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.innerHTML = `<img src="${post.url}" loading="lazy" alt="Post"><div class="shade"></div><button class="del-btn" data-id="${post.id}" title="Delete">✕</button>`;
+      card.querySelector('img').addEventListener('click', ()=>openLightbox(post.url));
+      card.querySelector('.del-btn').addEventListener('click', (ev)=>{ ev.stopPropagation(); if(confirm('Delete this post?')) deleteSocial(post.id); });
+      track.appendChild(card);
+    });
+  }
+  document.getElementById('prevBtn').addEventListener('click', ()=> document.getElementById('carouselTrack').scrollBy({left:-330, behavior:'smooth'}));
+  document.getElementById('nextBtn').addEventListener('click', ()=> document.getElementById('carouselTrack').scrollBy({left:330, behavior:'smooth'}));
+  document.getElementById('socialAddBtn').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Adding…';
+    const vals = await socialImgInput.getValues();
+    vals.forEach(v=> socialPosts.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), url:v}));
+    socialImgInput.clear();
+    await saveData('social', socialPosts, true);
+    renderSocial();
+    btn.textContent = orig;
+    flashSaved('socialSaveMsg');
+  });
+  function deleteSocial(id){
+    socialPosts = socialPosts.filter(p=>p.id!==id);
+    saveData('social', socialPosts, true);
+    renderSocial();
+  }
+
+  /* ================= CONTACT ================= */
+  function renderContact(){
+    document.getElementById('waLink').href = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp.replace(/[^0-9]/g,'')}` : '#';
+    document.getElementById('emailLink').href = contactInfo.email ? `mailto:${contactInfo.email}` : '#';
+    document.getElementById('emailLink').textContent = contactInfo.email ? `${contactInfo.email} →` : 'Not set yet';
+    const badges = document.getElementById('socialBadges');
+    badges.innerHTML = '';
+    (contactInfo.socialLinks||[]).forEach(link=>{
+      const a = document.createElement('a');
+      a.href = link.url; a.target = '_blank'; a.rel = 'noopener'; a.className = 'social-badge';
+      a.innerHTML = `<span class="mono">${(link.platform||'?').slice(0,2).toUpperCase()}</span> ${link.platform}`;
+      a.addEventListener('click', trackContactClick);
+      badges.appendChild(a);
+    });
+    document.getElementById('waLink').onclick = trackContactClick;
+    document.getElementById('emailLink').onclick = trackContactClick;
+
+    // admin fields
+    document.getElementById('cWhatsapp').value = contactInfo.whatsapp||'';
+    document.getElementById('cEmail').value = contactInfo.email||'';
+    document.getElementById('cTgToken').value = contactInfo.telegramToken||'';
+    document.getElementById('cTgChat').value = contactInfo.telegramChat||'';
+    const adminList = document.getElementById('socialLinksAdmin');
+    adminList.innerHTML = '';
+    (contactInfo.socialLinks||[]).forEach(link=>{
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;';
+      row.innerHTML = `<span style="flex:1;">${link.platform} — <span style="color:var(--muted);">${link.url}</span></span><button class="btn-small secondary" data-id="${link.id}" style="padding:6px 14px;">Remove</button>`;
+      row.querySelector('button').addEventListener('click', ()=>{
+        contactInfo.socialLinks = contactInfo.socialLinks.filter(l=>l.id!==link.id);
+        saveData('contact', contactInfo, true);
+        renderContact();
+      });
+      adminList.appendChild(row);
+    });
+  }
+  document.getElementById('contactSaveBtn').addEventListener('click', async ()=>{
+    contactInfo.whatsapp = document.getElementById('cWhatsapp').value.trim();
+    contactInfo.email = document.getElementById('cEmail').value.trim();
+    contactInfo.telegramToken = document.getElementById('cTgToken').value.trim();
+    contactInfo.telegramChat = document.getElementById('cTgChat').value.trim();
+    await saveData('contact', contactInfo, true);
+    renderContact();
+    flashSaved('contactSaveMsg');
+  });
+  document.getElementById('socialLinkAddBtn').addEventListener('click', async ()=>{
+    const platform = document.getElementById('sPlatform').value.trim();
+    const url = document.getElementById('sUrl').value.trim();
+    if(!platform || !url) return;
+    contactInfo.socialLinks = contactInfo.socialLinks || [];
+    contactInfo.socialLinks.push({id:'sl'+Date.now(), platform, url});
+    document.getElementById('sPlatform').value=''; document.getElementById('sUrl').value='';
+    await saveData('contact', contactInfo, true);
+    renderContact();
+  });
+
+  document.getElementById('serviceSubmitBtn').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('svName').value.trim();
+    const phone = document.getElementById('svPhone').value.trim();
+    const email = document.getElementById('svEmail').value.trim();
+    const details = document.getElementById('svDetails').value.trim();
+    const statusEl = document.getElementById('serviceStatus');
+    if(!name || !phone || !email || !details){
+      statusEl.textContent = 'Please fill in every field.'; statusEl.className = 'service-status err'; return;
+    }
+    if(!contactInfo.telegramToken || !contactInfo.telegramChat){
+      statusEl.textContent = 'Telegram is not connected yet — please reach out via WhatsApp or email above instead.';
+      statusEl.className = 'service-status err';
+      return;
+    }
+    const btn = e.target; btn.textContent = 'Sending…';
+    const text = `New Project Request\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nDetails:\n${details}`;
+    try{
+      const res = await fetch(`https://api.telegram.org/bot${contactInfo.telegramToken}/sendMessage`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({chat_id: contactInfo.telegramChat, text})
+      });
+      const json = await res.json();
+      if(json.ok){
+        statusEl.textContent = 'Sent — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
+        ['svName','svPhone','svEmail','svDetails'].forEach(id=>document.getElementById(id).value='');
+        trackContactClick();
+      } else {
+        statusEl.textContent = 'Could not send via Telegram. Please try WhatsApp or email instead.'; statusEl.className = 'service-status err';
+      }
+    }catch(err){
+      statusEl.textContent = 'Network error — please try WhatsApp or email instead.'; statusEl.className = 'service-status err';
+    }
+    btn.textContent = 'Send Request';
+  });
+
+  document.getElementById('startProjectBtn2').addEventListener('click', trackContactClick);
+
+  /* ================= HOME TEXT (easy editing) ================= */
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function parseHeadline(str){
+    let esc = escapeHtml(str);
+    esc = esc.split('||').join('<br>');
+    esc = esc.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    return esc;
+  }
+  function renderHomeText(){
+    document.getElementById('heroEyebrowText').innerHTML = homeText.eyebrow;
+    document.getElementById('heroHeadline').innerHTML = parseHeadline(homeText.headline);
+    document.getElementById('heroDesc').textContent = homeText.desc;
+    document.getElementById('hEyebrow').value = homeText.eyebrow;
+    document.getElementById('hHeadline').value = homeText.headline;
+    document.getElementById('hDesc').value = homeText.desc;
+  }
+  document.getElementById('homeTextSaveBtn').addEventListener('click', async ()=>{
+    homeText = {
+      eyebrow: document.getElementById('hEyebrow').value.trim() || homeText.eyebrow,
+      headline: document.getElementById('hHeadline').value.trim() || homeText.headline,
+      desc: document.getElementById('hDesc').value.trim() || homeText.desc
+    };
+    await saveData('homeText', homeText, true);
+    renderHomeText();
+    flashSaved('homeTextSaveMsg');
+  });
+
+  /* ================= PERSONAL PHOTO ================= */
+  function renderPersonalPhoto(){
+    document.getElementById('personalPhotoImg').src = personalPhotoUrl;
+  }
+  document.getElementById('photoSaveBtn').addEventListener('click', async (e)=>{
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Saving…';
+    const vals = await photoImgInput.getValues();
+    if(vals[0]){
+      personalPhotoUrl = vals[0];
+      await saveData('personalPhoto', personalPhotoUrl, true);
+      renderPersonalPhoto();
+    }
+    btn.textContent = orig;
+    flashSaved('photoSaveMsg');
+  });
+
+  /* ================= FOOTER ================= */
+  document.getElementById('footerSaveBtn').addEventListener('click', async ()=>{
+    const val = document.getElementById('footerTextInput').value.trim();
+    if(!val) return;
+    footerTextVal = val;
+    document.getElementById('footerText').textContent = val;
+    await saveData('footerText', val, true);
+  });
+
+  /* ================= lightbox ================= */
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  function openLightbox(src){ lightboxImg.src = src; lightbox.classList.add('show'); }
+  document.getElementById('lightboxClose').addEventListener('click', ()=> lightbox.classList.remove('show'));
+  lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.classList.remove('show'); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ lightbox.classList.remove('show'); modal.classList.remove('show'); } });
+
+  function renderCatArt(){
+    document.getElementById('artLogos').innerHTML = `<img src="${logoPlaceholder(2)}" style="width:74px;opacity:0.9;">`;
+    document.getElementById('artBranding').innerHTML = `<img src="${brandProjects[0]?.cover || coverPlaceholder(0,300,200)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+    document.getElementById('artSocial').innerHTML = `<img src="${socialPosts[0]?.url || postPlaceholder(0)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+  }
+
+  /* ================= init ================= */
+  async function init(){
+    seedDefaults();
+    const [storedLogos, storedBranding, storedSocial, storedContact, storedFooter, storedHomeText, storedPhoto] = await Promise.all([
+      loadData('logos', null, true),
+      loadData('branding', null, true),
+      loadData('social', null, true),
+      loadData('contact', null, true),
+      loadData('footerText', null, true),
+      loadData('homeText', null, true),
+      loadData('personalPhoto', null, true)
+    ]);
+    if(storedLogos) logos = storedLogos;
+    if(storedBranding) brandProjects = storedBranding;
+    if(storedSocial) socialPosts = storedSocial;
+    if(storedContact) contactInfo = storedContact;
+    if(storedFooter){ footerTextVal = storedFooter; document.getElementById('footerText').textContent = storedFooter; }
+    if(storedHomeText) homeText = storedHomeText;
+    if(storedPhoto) personalPhotoUrl = storedPhoto;
+    document.getElementById('footerTextInput').value = footerTextVal;
+
+    renderLogos();
+    renderBrandGrid();
+    renderSocial();
+    renderContact();
+    renderCatArt();
+    renderHomeText();
+    renderPersonalPhoto();
+    await checkExistingSession();
+    route();
+    initReveal();
+    trackVisit().then(refreshAnalytics);
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
