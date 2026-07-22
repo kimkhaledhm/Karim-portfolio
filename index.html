@@ -123,7 +123,7 @@
 
   /* final bottom grid: photo + footer/start-project */
   .final-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;justify-items:center;}
-  .final-photo-box{position:relative;width:440px;height:440px;max-width:100%;}
+  .final-photo-box{position:relative;width:320px;aspect-ratio:1080/1350;max-width:75%;}
   .final-photo-inner{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:var(--dark2);border:none;}
   .final-photo-inner img{width:100%;height:100%;object-fit:cover;display:block;border:none;}
   .float-badge{
@@ -234,7 +234,17 @@
   .gallery img{width:100%;border-radius:14px;margin-bottom:20px;break-inside:avoid;transition:filter 0.5s;}
   .gallery img:hover{filter:brightness(1.08);}
 
-  /* social carousel */
+  /* social carousel — rows */
+  .social-row{margin-bottom:70px;}
+  .social-row:last-child{margin-bottom:0;}
+  .social-row-head{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;position:relative;}
+  .social-row-head h3{font-size:20px;font-weight:400;color:var(--text);}
+  .social-row-head .row-del-btn{
+    position:static;display:none;width:24px;height:24px;border-radius:50%;background:rgba(20,20,20,0.85);
+    border:1px solid var(--border);align-items:center;justify-content:center;font-size:11px;transition:all 0.25s;
+  }
+  body.admin-on .social-row-head .row-del-btn{display:flex;}
+  .social-row-head .row-del-btn:hover{background:#ff4747;border-color:#ff4747;}
   .carousel-wrap{position:relative;max-width:1000px;margin:0 auto;}
   .carousel-track{display:flex;gap:26px;overflow-x:hidden;scroll-behavior:smooth;padding:10px 0;}
   .post-card{flex:none;width:290px;aspect-ratio:1080/1350;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer;background:var(--dark2);}
@@ -247,6 +257,29 @@
   .arrow-btn:hover{background:var(--accent);border-color:var(--accent);}
   .arrow-btn:hover svg{stroke:var(--dark2);}
   .arrow-btn svg{stroke:var(--text);transition:stroke 0.3s;}
+
+  /* before / after slider */
+  .ba-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+  .ba-slider{
+    position:relative;width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;
+    border:1px solid var(--border);cursor:ew-resize;user-select:none;-webkit-user-select:none;background:var(--dark2);
+  }
+  .ba-slider img{position:absolute;top:0;left:0;width:var(--ba-w, 100%);height:100%;object-fit:cover;display:block;max-width:none;pointer-events:none;}
+  .ba-after-wrap{position:absolute;inset:0;overflow:hidden;}
+  .ba-before-wrap{position:absolute;inset:0;overflow:hidden;width:50%;}
+  .ba-tag{position:absolute;top:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;background:rgba(20,20,20,0.65);backdrop-filter:blur(8px);padding:6px 12px;border-radius:100px;color:var(--text);z-index:3;}
+  .ba-tag.before{left:14px;}
+  .ba-tag.after{right:14px;}
+  .ba-handle{position:absolute;top:0;bottom:0;left:50%;width:0;z-index:4;transform:translateX(-50%);pointer-events:none;}
+  .ba-handle-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--accent);transform:translateX(-50%);box-shadow:0 0 10px rgba(198,255,2,0.6);}
+  .ba-handle-circle{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;
+    background:var(--accent);color:var(--dark2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+  }
+  .ba-item{position:relative;}
+  .ba-empty{text-align:center;padding:60px 20px;color:var(--faint);font-size:14px;grid-column:1/-1;}
+  @media (max-width:900px){ .ba-grid{grid-template-columns:1fr;} }
 
   /* contact page */
   .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:20px;}
@@ -534,23 +567,48 @@
     <div class="page-top">
       <a href="#home" class="back-link">← Back to work</a>
       <h1 class="page-title">Social Media Posts</h1>
-      <p class="page-desc">A carousel of recent posts, 1080×1350. Click through with the arrows, or click a post to view it larger.</p>
+      <p class="page-desc">Posts organized into rows by type — click through with the arrows, or click a post to view it larger.</p>
     </div>
 
     <div class="admin-panel" id="socialAdmin">
-      <h4>Add posts</h4>
+      <h4>Add posts to a row</h4>
+      <div class="admin-form" style="margin-bottom:14px;">
+        <div class="field span2">
+          <label>Row</label>
+          <select id="socialRowSelect"></select>
+        </div>
+      </div>
       <div id="socialImgInputHost"></div>
-      <div class="admin-actions"><button class="btn-small" id="socialAddBtn">Add to Feed</button><span class="save-msg" id="socialSaveMsg">Saved</span></div>
+      <div class="admin-actions"><button class="btn-small" id="socialAddBtn">Add to Row</button><span class="save-msg" id="socialSaveMsg">Saved</span></div>
+
+      <h4 style="margin-top:26px;">Create a new row</h4>
+      <div class="admin-form">
+        <div class="field span2"><label>Row Name</label><input type="text" id="newRowName" placeholder="e.g. Reels, Campaign, Behind the Scenes"></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small secondary" id="addRowBtn">Add Row</button></div>
     </div>
 
     <div class="section" style="padding-top:0;">
-      <div class="carousel-wrap">
-        <div class="carousel-track" id="carouselTrack"></div>
-        <div class="carousel-arrows">
-          <button class="arrow-btn" id="prevBtn" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
-          <button class="arrow-btn" id="nextBtn" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <div id="socialRowsContainer"></div>
+    </div>
+
+    <div class="admin-panel" id="baAdmin">
+      <h4>Add a Before / After comparison</h4>
+      <div class="admin-form">
+        <div class="field"><label>Before Image</label><div id="baBeforeHost"></div></div>
+        <div class="field"><label>After Image</label><div id="baAfterHost"></div></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small" id="baAddBtn">Add Comparison</button><span class="save-msg" id="baSaveMsg">Saved</span></div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="section-head" data-reveal>
+        <div>
+          <span class="section-eyebrow">Before / After</span>
+          <h2 class="section-title">Drag the line to compare.</h2>
         </div>
       </div>
+      <div id="baContainer"></div>
     </div>
   </section>
 
@@ -620,7 +678,7 @@
   <div class="modal-box">
     <h4 id="modalTitle">Admin Login</h4>
     <p class="sub" id="modalSub">Sign in with your admin account to manage the portfolio.</p>
-    <div class="field"><label>Email</label><input type="email" id="modalEmail" value="kimkhaledgame@gmail.com"></div>
+    <div class="field"><label>Email</label><input type="email" id="modalEmail" placeholder="you@email.com" autocomplete="off"></div>
     <div class="field"><label>Password</label><input type="password" id="modalPass"></div>
     <div class="modal-err" id="modalErr"></div>
     <div class="admin-actions">
@@ -707,7 +765,7 @@
     }catch(e){ return 0; }
   }
 
-  let logos = [], brandProjects = [], socialPosts = [];
+  let logos = [], brandProjects = [], socialRows = [], beforeAfterItems = [];
   let contactInfo = { whatsapp:'', email:'', telegramToken:'', telegramChat:'', socialLinks:[] };
   let footerTextVal = '© 2026 Marisol Vey — Graphic Design Studio';
   let homeText = { eyebrow:'Graphic Designer &amp; Visual Storyteller', headline:'Design that||holds its *silence*.', desc:"I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects." };
@@ -717,7 +775,7 @@
 
   function seedDefaults(){
     logos = Array.from({length:14}, (_,i)=>({id:'l'+i, url: logoPlaceholder(i)}));
-    socialPosts = Array.from({length:5}, (_,i)=>({id:'s'+i, url: postPlaceholder(i)}));
+    socialRows = [{ id:'row-recent', name:'Recent', posts: Array.from({length:5}, (_,i)=>({id:'s'+i, url: postPlaceholder(i)})) }];
     brandProjects = [
       { id:'b1', title:'Aureus — Private Bank Identity', client:'Aureus Capital',
         cover: coverPlaceholder(1, 1600, 1000),
@@ -901,6 +959,8 @@
   const bGalleryInput = createImageInput(document.getElementById('bGalleryHost'), {multiple:true, maxDim:1400, quality:0.8});
   const bMockupsInput = createImageInput(document.getElementById('bMockupsHost'), {multiple:true, maxDim:1400, quality:0.8});
   const photoImgInput = createImageInput(document.getElementById('photoImgInputHost'), {multiple:false, maxDim:1600, quality:0.85});
+  const baBeforeInput = createImageInput(document.getElementById('baBeforeHost'), {multiple:false, maxDim:1600, quality:0.85});
+  const baAfterInput = createImageInput(document.getElementById('baAfterHost'), {multiple:false, maxDim:1600, quality:0.85});
 
   /* ---------------- routing ---------------- */
   const views = ['home','logos','branding','branding-detail','social','contact'];
@@ -959,6 +1019,7 @@
     document.getElementById('logoAdmin').classList.toggle('show', adminMode);
     document.getElementById('brandAdmin').classList.toggle('show', adminMode);
     document.getElementById('socialAdmin').classList.toggle('show', adminMode);
+    document.getElementById('baAdmin').classList.toggle('show', adminMode);
     document.getElementById('contactAdmin').classList.toggle('show', adminMode);
     document.getElementById('footerEdit').classList.toggle('show', adminMode);
     document.getElementById('homeTextAdmin').classList.toggle('show', adminMode);
@@ -983,9 +1044,10 @@
 
   function openAdminModal(){
     modalErr.textContent = '';
+    modalEmail.value = '';
     modalPass.value = '';
     modal.classList.add('show');
-    modalPass.focus();
+    modalEmail.focus();
   }
   document.getElementById('adminToggle').addEventListener('click', async ()=>{
     if(!adminAuthed){ openAdminModal(); return; }
@@ -1228,37 +1290,159 @@
     renderBrandGrid();
   }
 
-  /* ================= SOCIAL ================= */
-  function renderSocial(){
-    const track = document.getElementById('carouselTrack');
-    track.innerHTML = '';
-    if(socialPosts.length === 0){ track.innerHTML = '<p class="empty-state">No posts yet.</p>'; return; }
-    socialPosts.forEach(post=>{
-      const card = document.createElement('div');
-      card.className = 'post-card';
-      card.innerHTML = `<img src="${post.url}" loading="lazy" alt="Post"><div class="shade"></div><button class="del-btn" data-id="${post.id}" title="Delete">✕</button>`;
-      card.querySelector('img').addEventListener('click', ()=>openLightbox(post.url));
-      card.querySelector('.del-btn').addEventListener('click', (ev)=>{ ev.stopPropagation(); if(confirm('Delete this post?')) deleteSocial(post.id); });
-      track.appendChild(card);
+  /* ================= SOCIAL (rows) ================= */
+  function renderRowSelect(){
+    const sel = document.getElementById('socialRowSelect');
+    const prevVal = sel.value;
+    sel.innerHTML = socialRows.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+    if(socialRows.some(r=>r.id===prevVal)) sel.value = prevVal;
+  }
+
+  function renderSocialRows(){
+    const container = document.getElementById('socialRowsContainer');
+    container.innerHTML = '';
+    if(socialRows.length === 0){ container.innerHTML = '<p class="empty-state">No post rows yet — add one in Edit Mode.</p>'; return; }
+    socialRows.forEach(row=>{
+      const rowEl = document.createElement('div');
+      rowEl.className = 'social-row';
+      rowEl.innerHTML = `
+        <div class="social-row-head">
+          <h3>${row.name}</h3>
+          <button class="row-del-btn" title="Delete row">✕</button>
+        </div>
+        <div class="carousel-wrap">
+          <div class="carousel-track"></div>
+          <div class="carousel-arrows">
+            <button class="arrow-btn prev-btn" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button class="arrow-btn next-btn" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+      `;
+      const track = rowEl.querySelector('.carousel-track');
+      if(row.posts.length === 0){
+        track.innerHTML = '<p class="empty-state">No posts in this row yet.</p>';
+      } else {
+        row.posts.forEach(post=>{
+          const card = document.createElement('div');
+          card.className = 'post-card';
+          card.innerHTML = `<img src="${post.url}" loading="lazy" alt="Post"><div class="shade"></div><button class="del-btn" title="Delete">✕</button>`;
+          card.querySelector('img').addEventListener('click', ()=>openLightbox(post.url));
+          card.querySelector('.del-btn').addEventListener('click', (ev)=>{ ev.stopPropagation(); if(confirm('Delete this post?')) deleteSocialPost(row.id, post.id); });
+          track.appendChild(card);
+        });
+      }
+      rowEl.querySelector('.prev-btn').addEventListener('click', ()=> track.scrollBy({left:-330, behavior:'smooth'}));
+      rowEl.querySelector('.next-btn').addEventListener('click', ()=> track.scrollBy({left:330, behavior:'smooth'}));
+      rowEl.querySelector('.row-del-btn').addEventListener('click', ()=>{ if(confirm(`Delete the "${row.name}" row and all its posts?`)) deleteSocialRow(row.id); });
+      container.appendChild(rowEl);
     });
   }
-  document.getElementById('prevBtn').addEventListener('click', ()=> document.getElementById('carouselTrack').scrollBy({left:-330, behavior:'smooth'}));
-  document.getElementById('nextBtn').addEventListener('click', ()=> document.getElementById('carouselTrack').scrollBy({left:330, behavior:'smooth'}));
+  document.getElementById('addRowBtn').addEventListener('click', async ()=>{
+    const nameInput = document.getElementById('newRowName');
+    const name = nameInput.value.trim();
+    if(!name) return;
+    socialRows.push({ id:'row'+Date.now(), name, posts:[] });
+    nameInput.value = '';
+    await saveData('socialRows', socialRows);
+    renderSocialRows();
+    renderRowSelect();
+  });
   document.getElementById('socialAddBtn').addEventListener('click', async (e)=>{
     e.preventDefault();
     const btn = e.target; const orig = btn.textContent; btn.textContent = 'Adding…';
+    const rowId = document.getElementById('socialRowSelect').value;
+    const row = socialRows.find(r=>r.id===rowId);
+    if(!row){ btn.textContent = orig; return; }
     const vals = await socialImgInput.getValues();
-    vals.forEach(v=> socialPosts.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), url:v}));
+    vals.forEach(v=> row.posts.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), url:v}));
     socialImgInput.clear();
-    await saveData('social', socialPosts, true);
-    renderSocial();
+    await saveData('socialRows', socialRows);
+    renderSocialRows();
     btn.textContent = orig;
     flashSaved('socialSaveMsg');
   });
-  function deleteSocial(id){
-    socialPosts = socialPosts.filter(p=>p.id!==id);
-    saveData('social', socialPosts, true);
-    renderSocial();
+  function deleteSocialPost(rowId, postId){
+    const row = socialRows.find(r=>r.id===rowId);
+    if(!row) return;
+    row.posts = row.posts.filter(p=>p.id!==postId);
+    saveData('socialRows', socialRows);
+    renderSocialRows();
+  }
+  function deleteSocialRow(rowId){
+    socialRows = socialRows.filter(r=>r.id!==rowId);
+    saveData('socialRows', socialRows);
+    renderSocialRows();
+    renderRowSelect();
+  }
+
+  /* ================= BEFORE / AFTER SLIDER ================= */
+  function initBaSlider(el){
+    const beforeWrap = el.querySelector('.ba-before-wrap');
+    const handle = el.querySelector('.ba-handle');
+    const imgs = el.querySelectorAll('img');
+    function setWidthVar(){
+      const w = el.offsetWidth;
+      imgs.forEach(img=> img.style.setProperty('--ba-w', w+'px'));
+    }
+    function setPos(percent){
+      percent = Math.max(0, Math.min(100, percent));
+      beforeWrap.style.width = percent + '%';
+      handle.style.left = percent + '%';
+    }
+    setWidthVar();
+    setPos(50);
+    window.addEventListener('resize', setWidthVar);
+    let dragging = false;
+    function pointerToPercent(clientX){
+      const rect = el.getBoundingClientRect();
+      return ((clientX - rect.left) / rect.width) * 100;
+    }
+    el.addEventListener('pointerdown', (e)=>{ dragging = true; try{ el.setPointerCapture(e.pointerId); }catch(err){} setPos(pointerToPercent(e.clientX)); });
+    el.addEventListener('pointermove', (e)=>{ if(!dragging) return; setPos(pointerToPercent(e.clientX)); });
+    el.addEventListener('pointerup', ()=>{ dragging = false; });
+    el.addEventListener('pointerleave', ()=>{ dragging = false; });
+  }
+  function renderBeforeAfter(){
+    const container = document.getElementById('baContainer');
+    container.innerHTML = '';
+    if(beforeAfterItems.length === 0){ container.innerHTML = '<div class="ba-grid"><p class="ba-empty">No before/after comparisons yet — add one in Edit Mode.</p></div>'; return; }
+    const grid = document.createElement('div');
+    grid.className = 'ba-grid';
+    container.appendChild(grid);
+    beforeAfterItems.forEach(item=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'ba-item';
+      wrap.innerHTML = `
+        <div class="ba-slider">
+          <div class="ba-after-wrap"><img src="${item.after}" alt="After"></div>
+          <div class="ba-before-wrap"><img src="${item.before}" alt="Before"></div>
+          <span class="ba-tag before">Before</span>
+          <span class="ba-tag after">After</span>
+          <div class="ba-handle"><div class="ba-handle-line"></div><div class="ba-handle-circle">↔</div></div>
+        </div>
+        <button class="del-btn" title="Delete">✕</button>
+      `;
+      grid.appendChild(wrap);
+      wrap.querySelector('.del-btn').addEventListener('click', ()=>{ if(confirm('Delete this comparison?')) deleteBeforeAfter(item.id); });
+      initBaSlider(wrap.querySelector('.ba-slider'));
+    });
+  }
+  document.getElementById('baAddBtn').addEventListener('click', async (e)=>{
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Saving…';
+    const beforeVals = await baBeforeInput.getValues();
+    const afterVals = await baAfterInput.getValues();
+    if(!beforeVals[0] || !afterVals[0]){ btn.textContent = orig; alert('Please add both a before and an after image.'); return; }
+    beforeAfterItems.push({ id:'ba'+Date.now(), before: beforeVals[0], after: afterVals[0] });
+    baBeforeInput.clear(); baAfterInput.clear();
+    await saveData('beforeAfter', beforeAfterItems);
+    renderBeforeAfter();
+    btn.textContent = orig;
+    flashSaved('baSaveMsg');
+  });
+  function deleteBeforeAfter(id){
+    beforeAfterItems = beforeAfterItems.filter(b=>b.id!==id);
+    saveData('beforeAfter', beforeAfterItems);
+    renderBeforeAfter();
   }
 
   /* ================= CONTACT ================= */
@@ -1443,35 +1627,46 @@
   function renderCatArt(){
     document.getElementById('artLogos').innerHTML = `<img src="${logoPlaceholder(2)}" style="width:74px;opacity:0.9;">`;
     document.getElementById('artBranding').innerHTML = `<img src="${brandProjects[0]?.cover || coverPlaceholder(0,300,200)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
-    document.getElementById('artSocial').innerHTML = `<img src="${socialPosts[0]?.url || postPlaceholder(0)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+    document.getElementById('artSocial').innerHTML = `<img src="${socialRows[0]?.posts?.[0]?.url || postPlaceholder(0)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
   }
 
   /* ================= init ================= */
   async function init(){
     seedDefaults();
-    const [storedLogos, storedBranding, storedSocial, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges] = await Promise.all([
+    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter] = await Promise.all([
       loadData('logos', null, true),
       loadData('branding', null, true),
+      loadData('socialRows', null, true),
       loadData('social', null, true),
       loadData('contact', null, true),
       loadData('footerText', null, true),
       loadData('homeText', null, true),
       loadData('personalPhoto', null, true),
-      loadData('photoBadges', null, true)
+      loadData('photoBadges', null, true),
+      loadData('beforeAfter', null, true)
     ]);
     if(storedLogos) logos = storedLogos;
     if(storedBranding) brandProjects = storedBranding;
-    if(storedSocial) socialPosts = storedSocial;
+    if(storedSocialRows){
+      socialRows = storedSocialRows;
+    } else if(storedSocialLegacy){
+      // migrate old flat post list into a single default row
+      socialRows = [{ id:'row-recent', name:'Recent', posts: storedSocialLegacy }];
+      saveData('socialRows', socialRows);
+    }
     if(storedContact) contactInfo = storedContact;
     if(storedFooter){ footerTextVal = storedFooter; document.getElementById('footerText').textContent = storedFooter; }
     if(storedHomeText) homeText = storedHomeText;
     if(storedPhoto) personalPhotoUrl = storedPhoto;
     if(storedBadges) photoBadges = storedBadges;
+    if(storedBeforeAfter) beforeAfterItems = storedBeforeAfter;
     document.getElementById('footerTextInput').value = footerTextVal;
 
     renderLogos();
     renderBrandGrid();
-    renderSocial();
+    renderSocialRows();
+    renderRowSelect();
+    renderBeforeAfter();
     renderContact();
     renderCatArt();
     renderHomeText();
