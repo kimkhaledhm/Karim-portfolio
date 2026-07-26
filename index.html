@@ -63,7 +63,10 @@
   .view.active{display:block;animation:fadeIn 0.6s var(--ease);}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 5vw;position:relative;}
+  .hero{min-height:100vh;display:flex;align-items:center;justify-content:space-between;gap:60px;flex-wrap:wrap;padding:120px 5vw 80px;position:relative;}
+  .hero-content{flex:1;min-width:320px;}
+  .hero-photo{flex:1;min-width:280px;display:flex;align-items:center;justify-content:center;}
+  @media (max-width:900px){ .hero-photo{order:-1;margin-bottom:20px;} .hero{padding-top:140px;} }
   .hero-eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);opacity:0;animation:reveal 1s var(--ease) 0.1s forwards;display:flex;align-items:center;gap:12px;margin-bottom:28px;}
   .hero-eyebrow .line{width:40px;height:1px;background:var(--accent);}
   .hero h1{font-size:clamp(48px, 8.4vw, 128px);line-height:0.98;font-weight:400;opacity:0;animation:reveal 1.1s var(--ease) 0.25s forwards;}
@@ -103,6 +106,24 @@
   .a-card .num{font-family:'Fraunces',serif;font-size:34px;color:var(--accent);}
   .a-card .lbl{font-size:12px;color:var(--muted);margin-top:6px;}
 
+  /* nav request badge */
+  .req-badge{display:none;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;background:#ff5050;color:#fff;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;margin-left:8px;}
+  .req-badge.show{display:inline-flex;}
+
+  /* incoming requests list */
+  .req-list{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+  .req-item{border:1px solid var(--border);background:var(--glass);border-radius:14px;padding:18px 20px;position:relative;}
+  .req-item.unread{border-color:rgba(198,255,2,0.4);}
+  .req-item .req-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+  .req-item .req-name{font-family:'Fraunces',serif;font-size:18px;}
+  .req-item .req-new{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--dark2);background:var(--accent);padding:3px 9px;border-radius:100px;margin-left:8px;}
+  .req-item .req-date{font-family:'Space Mono',monospace;font-size:11px;color:var(--faint);}
+  .req-item .req-meta{font-size:13px;color:var(--muted);margin-bottom:10px;}
+  .req-item .req-meta a{color:var(--text);}
+  .req-item .req-details{font-size:14px;line-height:1.6;color:var(--text);white-space:pre-wrap;margin-bottom:12px;}
+  .req-item .req-actions{display:flex;gap:10px;}
+  .req-empty{color:var(--muted);font-size:14px;padding:20px 0;}
+
   /* category cards */
   .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
   .cat-card{position:relative;border-radius:20px;overflow:hidden;height:440px;border:1px solid var(--border);background:linear-gradient(160deg, var(--dark2), #0a0a0a);cursor:pointer;transition:transform 0.6s var(--ease), border-color 0.6s var(--ease);}
@@ -123,7 +144,7 @@
 
   /* final bottom grid: photo + footer/start-project */
   .final-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;justify-items:center;}
-  .final-photo-box{position:relative;width:320px;aspect-ratio:1080/1350;max-width:75%;}
+  .final-photo-box{position:relative;width:400px;aspect-ratio:1080/1350;max-width:85%;}
   .final-photo-inner{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:var(--dark2);border:none;}
   .final-photo-inner img{width:100%;height:100%;object-fit:cover;display:block;border:none;}
   .float-badge{
@@ -370,6 +391,7 @@
     <a href="#contact" class="nav-link">Contact</a>
     <button class="admin-toggle" id="shareBtn" style="display:none;">Share Portfolio</button>
     <button class="admin-toggle" id="adminToggle">Admin</button>
+    <span class="req-badge" id="reqBadge">0</span>
     <a href="#" class="logout-link" id="logoutLink" style="display:none;">Log out</a>
   </div>
 </nav>
@@ -389,11 +411,28 @@
     </div>
 
     <div class="hero">
-      <div class="hero-eyebrow"><span class="line"></span> <span id="heroEyebrowText">Graphic Designer &amp; Visual Storyteller</span></div>
-      <h1 id="heroHeadline">Design that<br>holds its <em>silence</em>.</h1>
-      <p class="desc" id="heroDesc">I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects.</p>
-      <div class="hero-cta">
-        <a href="#branding" class="btn btn-primary">View Selected Work</a>
+      <div class="hero-content">
+        <div class="hero-eyebrow"><span class="line"></span> <span id="heroEyebrowText">Graphic Designer &amp; Visual Storyteller</span></div>
+        <h1 id="heroHeadline">Design that<br>holds its <em>silence</em>.</h1>
+        <p class="desc" id="heroDesc">I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects.</p>
+        <div class="hero-cta">
+          <a href="#branding" class="btn btn-primary">View Selected Work</a>
+        </div>
+      </div>
+      <div class="hero-photo">
+        <div class="final-photo-box">
+          <div class="final-photo-inner">
+            <img id="personalPhotoImg" src="" alt="Personal photo">
+          </div>
+          <div class="float-badge float-badge-top">
+            <div class="fb-value" id="badgeExpValueText">3+ Years</div>
+            <div class="fb-label" id="badgeExpLabelText">Experience</div>
+          </div>
+          <div class="float-badge float-badge-bottom">
+            <div class="fb-value" id="badgeClientsValueText">60+ Clients</div>
+            <div class="fb-label" id="badgeClientsLabelText">Global Projects</div>
+          </div>
+        </div>
       </div>
       <div class="scroll-cue"><span class="dot"></span> Scroll</div>
     </div>
@@ -406,6 +445,17 @@
         <div class="a-card"><div class="num" id="statProjectViews">–</div><div class="lbl">Project Detail Views</div></div>
         <div class="a-card"><div class="num" id="statContactClicks">–</div><div class="lbl">Contact Button Clicks</div></div>
       </div>
+    </div>
+
+    <div class="admin-panel" id="catCoversAdmin">
+      <h4>Category Cover Images</h4>
+      <p style="margin-bottom:14px;color:var(--muted);font-size:13px;">Set a cover photo for each of the three category cards below. Leave one empty to keep the automatic default.</p>
+      <div class="admin-form">
+        <div class="field"><label>Logos Cover</label><div id="catCoverLogosHost"></div></div>
+        <div class="field"><label>Branding Cover</label><div id="catCoverBrandingHost"></div></div>
+        <div class="field"><label>Social Media Posts Cover</label><div id="catCoverSocialHost"></div></div>
+      </div>
+      <div class="admin-actions"><button class="btn-small" id="catCoversSaveBtn">Save Covers</button><span class="save-msg" id="catCoversSaveMsg">Saved</span></div>
     </div>
 
     <div class="section" id="categories">
@@ -459,30 +509,15 @@
     </div>
 
     <div class="section" style="padding-top:0;">
-      <div class="final-grid">
-        <div class="final-photo-box">
-          <div class="final-photo-inner">
-            <img id="personalPhotoImg" src="" alt="Personal photo">
+      <div class="final-right">
+        <div class="final-footer-block">
+          <div class="footer-edit" id="footerEdit">
+            <input type="text" id="footerTextInput" placeholder="Footer text...">
+            <button class="btn-small" id="footerSaveBtn">Save</button>
           </div>
-          <div class="float-badge float-badge-top">
-            <div class="fb-value" id="badgeExpValueText">3+ Years</div>
-            <div class="fb-label" id="badgeExpLabelText">Experience</div>
-          </div>
-          <div class="float-badge float-badge-bottom">
-            <div class="fb-value" id="badgeClientsValueText">60+ Clients</div>
-            <div class="fb-label" id="badgeClientsLabelText">Global Projects</div>
-          </div>
-        </div>
-        <div class="final-right">
-          <div class="final-footer-block">
-            <div class="footer-edit" id="footerEdit">
-              <input type="text" id="footerTextInput" placeholder="Footer text...">
-              <button class="btn-small" id="footerSaveBtn">Save</button>
-            </div>
-            <span class="final-footer-label">Footer</span>
-            <p id="footerText">© 2026 Marisol Vey — Graphic Design Studio</p>
-            <p class="tagline">Built for people who notice details.</p>
-          </div>
+          <span class="final-footer-label">Footer</span>
+          <p id="footerText">© 2026 Marisol Vey — Graphic Design Studio</p>
+          <p class="tagline">Built for people who notice details.</p>
         </div>
       </div>
     </div>
@@ -618,6 +653,12 @@
       <a href="#home" class="back-link">← Back to work</a>
       <h1 class="page-title">Start a Project</h1>
       <p class="page-desc">Reach out directly, or send over the details below — it lands straight in my inbox.</p>
+    </div>
+
+    <div class="admin-panel" id="requestsAdmin">
+      <h4>Incoming Requests <span id="reqCountLabel" style="color:var(--accent);"></span></h4>
+      <p style="margin-bottom:4px;color:var(--muted);font-size:13px;">Every service request submitted below is saved here — plus sent to your Telegram if it's connected.</p>
+      <div class="req-list" id="reqList"></div>
     </div>
 
     <div class="admin-panel" id="contactAdmin">
@@ -772,6 +813,8 @@
   let personalPhotoUrl = '';
   let photoBadges = { expValue:'3+ Years', expLabel:'Experience', clientsValue:'60+ Clients', clientsLabel:'Global Projects' };
   let activeBrandId = null, editingBrandId = null;
+  let catCovers = { logos:'', branding:'', social:'' };
+  let serviceRequests = [];
 
   function seedDefaults(){
     logos = Array.from({length:14}, (_,i)=>({id:'l'+i, url: logoPlaceholder(i)}));
@@ -961,6 +1004,9 @@
   const photoImgInput = createImageInput(document.getElementById('photoImgInputHost'), {multiple:false, maxDim:1600, quality:0.85});
   const baBeforeInput = createImageInput(document.getElementById('baBeforeHost'), {multiple:false, maxDim:1600, quality:0.85});
   const baAfterInput = createImageInput(document.getElementById('baAfterHost'), {multiple:false, maxDim:1600, quality:0.85});
+  const catCoverLogosInput = createImageInput(document.getElementById('catCoverLogosHost'), {multiple:false, maxDim:1200, quality:0.85});
+  const catCoverBrandingInput = createImageInput(document.getElementById('catCoverBrandingHost'), {multiple:false, maxDim:1200, quality:0.85});
+  const catCoverSocialInput = createImageInput(document.getElementById('catCoverSocialHost'), {multiple:false, maxDim:1200, quality:0.85});
 
   /* ---------------- routing ---------------- */
   const views = ['home','logos','branding','branding-detail','social','contact'];
@@ -1024,7 +1070,10 @@
     document.getElementById('footerEdit').classList.toggle('show', adminMode);
     document.getElementById('homeTextAdmin').classList.toggle('show', adminMode);
     document.getElementById('photoAdmin').classList.toggle('show', adminMode);
+    document.getElementById('catCoversAdmin').classList.toggle('show', adminMode);
+    document.getElementById('requestsAdmin').classList.toggle('show', adminMode);
     document.getElementById('analyticsStrip').classList.toggle('show', adminAuthed);
+    updateReqBadge();
     document.getElementById('logoutLink').style.display = adminAuthed ? 'inline' : 'none';
     document.getElementById('shareBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
     const btn = document.getElementById('adminToggle');
@@ -1511,31 +1560,85 @@
     if(!name || !phone || !email || !details){
       statusEl.textContent = 'Please fill in every field.'; statusEl.className = 'service-status err'; return;
     }
-    if(!contactInfo.telegramToken || !contactInfo.telegramChat){
-      statusEl.textContent = 'Telegram is not connected yet — please reach out via WhatsApp or email above instead.';
-      statusEl.className = 'service-status err';
-      return;
-    }
     const btn = e.target; btn.textContent = 'Sending…';
-    const text = `New Project Request\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nDetails:\n${details}`;
-    try{
-      const res = await fetch(`https://api.telegram.org/bot${contactInfo.telegramToken}/sendMessage`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({chat_id: contactInfo.telegramChat, text})
-      });
-      const json = await res.json();
-      if(json.ok){
-        statusEl.textContent = 'Sent — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
-        ['svName','svPhone','svEmail','svDetails'].forEach(id=>document.getElementById(id).value='');
-        trackContactClick();
-      } else {
-        statusEl.textContent = 'Could not send via Telegram. Please try WhatsApp or email instead.'; statusEl.className = 'service-status err';
-      }
-    }catch(err){
-      statusEl.textContent = 'Network error — please try WhatsApp or email instead.'; statusEl.className = 'service-status err';
+
+    // Always save the request first, so it's never lost even if Telegram fails or isn't set up.
+    const reqObj = { id:'req'+Date.now()+Math.random().toString(36).slice(2,7), name, phone, email, details, ts: new Date().toISOString(), read:false };
+    serviceRequests.unshift(reqObj);
+    await saveData('serviceRequests', serviceRequests, true);
+    renderServiceRequests();
+
+    let telegramOk = false;
+    if(contactInfo.telegramToken && contactInfo.telegramChat){
+      const text = `New Project Request\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nDetails:\n${details}`;
+      try{
+        const res = await fetch(`https://api.telegram.org/bot${contactInfo.telegramToken}/sendMessage`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({chat_id: contactInfo.telegramChat, text})
+        });
+        const json = await res.json();
+        telegramOk = !!json.ok;
+      }catch(err){ telegramOk = false; }
     }
+
+    if(telegramOk){
+      statusEl.textContent = 'Sent — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
+    } else {
+      statusEl.textContent = 'Request received — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
+    }
+    ['svName','svPhone','svEmail','svDetails'].forEach(id=>document.getElementById(id).value='');
+    trackContactClick();
     btn.textContent = 'Send Request';
   });
+
+  function updateReqBadge(){
+    const unread = serviceRequests.filter(r=>!r.read).length;
+    const badge = document.getElementById('reqBadge');
+    badge.textContent = unread > 9 ? '9+' : String(unread);
+    badge.classList.toggle('show', adminAuthed && unread > 0);
+    const label = document.getElementById('reqCountLabel');
+    if(label) label.textContent = unread > 0 ? `— ${unread} new` : '';
+  }
+
+  function renderServiceRequests(){
+    const list = document.getElementById('reqList');
+    list.innerHTML = '';
+    if(!serviceRequests.length){
+      list.innerHTML = '<div class="req-empty">No requests yet — they\'ll show up here the moment someone submits the form below.</div>';
+      updateReqBadge();
+      return;
+    }
+    serviceRequests.forEach(r=>{
+      const el = document.createElement('div');
+      el.className = 'req-item' + (r.read ? '' : ' unread');
+      const dateStr = new Date(r.ts).toLocaleString();
+      el.innerHTML = `
+        <div class="req-top">
+          <span class="req-name">${r.name}${r.read ? '' : '<span class="req-new">New</span>'}</span>
+          <span class="req-date">${dateStr}</span>
+        </div>
+        <div class="req-meta">${r.phone} · ${r.email}</div>
+        <div class="req-details">${r.details}</div>
+        <div class="req-actions">
+          ${r.read ? '' : '<button class="btn-small secondary" data-act="read">Mark as read</button>'}
+          <button class="btn-small secondary" data-act="delete">Delete</button>
+        </div>
+      `;
+      el.querySelector('[data-act="delete"]').addEventListener('click', async ()=>{
+        serviceRequests = serviceRequests.filter(x=>x.id!==r.id);
+        await saveData('serviceRequests', serviceRequests, true);
+        renderServiceRequests();
+      });
+      const readBtn = el.querySelector('[data-act="read"]');
+      if(readBtn) readBtn.addEventListener('click', async ()=>{
+        r.read = true;
+        await saveData('serviceRequests', serviceRequests, true);
+        renderServiceRequests();
+      });
+      list.appendChild(el);
+    });
+    updateReqBadge();
+  }
 
   document.getElementById('startProjectBtn2').addEventListener('click', trackContactClick);
 
@@ -1625,15 +1728,34 @@
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ lightbox.classList.remove('show'); modal.classList.remove('show'); } });
 
   function renderCatArt(){
-    document.getElementById('artLogos').innerHTML = `<img src="${logoPlaceholder(2)}" style="width:74px;opacity:0.9;">`;
-    document.getElementById('artBranding').innerHTML = `<img src="${brandProjects[0]?.cover || coverPlaceholder(0,300,200)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
-    document.getElementById('artSocial').innerHTML = `<img src="${socialRows[0]?.posts?.[0]?.url || postPlaceholder(0)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+    if(catCovers.logos){
+      document.getElementById('artLogos').innerHTML = `<img src="${catCovers.logos}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+    } else {
+      document.getElementById('artLogos').innerHTML = `<img src="${logoPlaceholder(2)}" style="width:74px;opacity:0.9;">`;
+    }
+    document.getElementById('artBranding').innerHTML = `<img src="${catCovers.branding || brandProjects[0]?.cover || coverPlaceholder(0,300,200)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
+    document.getElementById('artSocial').innerHTML = `<img src="${catCovers.social || socialRows[0]?.posts?.[0]?.url || postPlaceholder(0)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.55;">`;
   }
+  document.getElementById('catCoversSaveBtn').addEventListener('click', async (e)=>{
+    const btn = e.target; const orig = btn.textContent; btn.textContent = 'Saving…';
+    const [logoVal, brandVal, socialVal] = await Promise.all([
+      catCoverLogosInput.getValues(), catCoverBrandingInput.getValues(), catCoverSocialInput.getValues()
+    ]);
+    catCovers = {
+      logos: logoVal[0] || catCovers.logos,
+      branding: brandVal[0] || catCovers.branding,
+      social: socialVal[0] || catCovers.social
+    };
+    await saveData('catCovers', catCovers, true);
+    renderCatArt();
+    btn.textContent = orig;
+    flashSaved('catCoversSaveMsg');
+  });
 
   /* ================= init ================= */
   async function init(){
     seedDefaults();
-    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter] = await Promise.all([
+    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter, storedCatCovers, storedRequests] = await Promise.all([
       loadData('logos', null, true),
       loadData('branding', null, true),
       loadData('socialRows', null, true),
@@ -1643,7 +1765,9 @@
       loadData('homeText', null, true),
       loadData('personalPhoto', null, true),
       loadData('photoBadges', null, true),
-      loadData('beforeAfter', null, true)
+      loadData('beforeAfter', null, true),
+      loadData('catCovers', null, true),
+      loadData('serviceRequests', null, true)
     ]);
     if(storedLogos) logos = storedLogos;
     if(storedBranding) brandProjects = storedBranding;
@@ -1660,6 +1784,13 @@
     if(storedPhoto) personalPhotoUrl = storedPhoto;
     if(storedBadges) photoBadges = storedBadges;
     if(storedBeforeAfter) beforeAfterItems = storedBeforeAfter;
+    if(storedCatCovers){
+      catCovers = storedCatCovers;
+      if(catCovers.logos) catCoverLogosInput.setValues([catCovers.logos]);
+      if(catCovers.branding) catCoverBrandingInput.setValues([catCovers.branding]);
+      if(catCovers.social) catCoverSocialInput.setValues([catCovers.social]);
+    }
+    if(storedRequests) serviceRequests = storedRequests;
     document.getElementById('footerTextInput').value = footerTextVal;
 
     renderLogos();
@@ -1672,6 +1803,7 @@
     renderHomeText();
     renderPersonalPhoto();
     renderPhotoBadges();
+    renderServiceRequests();
     await checkExistingSession();
     route();
     initReveal();
