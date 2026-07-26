@@ -124,6 +124,13 @@
   .req-item .req-actions{display:flex;gap:10px;}
   .req-empty{color:var(--muted);font-size:14px;padding:20px 0;}
 
+  /* manage existing logos */
+  .logo-manage-grid{display:flex;flex-wrap:wrap;gap:14px;}
+  .logo-manage-item{position:relative;width:100px;height:80px;border:1px solid var(--border);border-radius:12px;background:var(--dark2);display:flex;align-items:center;justify-content:center;padding:8px;}
+  .logo-manage-item img{max-width:100%;max-height:100%;object-fit:contain;}
+  .logo-manage-item .lm-x{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:#ff5050;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:2px solid var(--dark2);}
+  .logo-manage-empty{color:var(--muted);font-size:13px;}
+
   /* category cards */
   .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
   .cat-card{position:relative;border-radius:20px;overflow:hidden;height:440px;border:1px solid var(--border);background:linear-gradient(160deg, var(--dark2), #0a0a0a);cursor:pointer;transition:transform 0.6s var(--ease), border-color 0.6s var(--ease);}
@@ -280,9 +287,9 @@
   .arrow-btn svg{stroke:var(--text);transition:stroke 0.3s;}
 
   /* before / after slider */
-  .ba-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+  .ba-grid{display:grid;grid-template-columns:repeat(auto-fit, 680px);gap:24px;justify-content:center;}
   .ba-slider{
-    position:relative;width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;
+    position:relative;width:680px;max-width:100%;aspect-ratio:1080/1350;border-radius:18px;overflow:hidden;
     border:1px solid var(--border);cursor:ew-resize;user-select:none;-webkit-user-select:none;background:var(--dark2);
   }
   .ba-slider img{position:absolute;top:0;left:0;width:var(--ba-w, 100%);height:100%;object-fit:cover;display:block;max-width:none;pointer-events:none;}
@@ -300,7 +307,7 @@
   }
   .ba-item{position:relative;}
   .ba-empty{text-align:center;padding:60px 20px;color:var(--faint);font-size:14px;grid-column:1/-1;}
-  @media (max-width:900px){ .ba-grid{grid-template-columns:1fr;} }
+  @media (max-width:900px){ .ba-grid{grid-template-columns:repeat(auto-fit, 580px);} .ba-slider{width:580px;} }
 
   /* contact page */
   .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:20px;}
@@ -535,6 +542,10 @@
       <h4>Add logos</h4>
       <div id="logoImgInputHost"></div>
       <div class="admin-actions"><button class="btn-small" id="logoAddBtn">Add to Archive</button><span class="save-msg" id="logoSaveMsg">Saved</span></div>
+
+      <h4 style="margin-top:28px;">Manage existing logos</h4>
+      <p style="margin:0 0 14px;color:var(--muted);font-size:13px;">Click the ✕ on any logo to remove it permanently.</p>
+      <div class="logo-manage-grid" id="logoManageGrid"></div>
     </div>
 
     <div id="logoRows"></div>
@@ -1193,6 +1204,25 @@
       row.appendChild(track);
       container.appendChild(row);
     }
+    renderLogoManageGrid();
+  }
+  function renderLogoManageGrid(){
+    const grid = document.getElementById('logoManageGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    if(logos.length === 0){ grid.innerHTML = '<div class="logo-manage-empty">No logos yet.</div>'; return; }
+    logos.forEach(logo=>{
+      const item = document.createElement('div');
+      item.className = 'logo-manage-item';
+      item.innerHTML = `<img src="${logo.url}" alt="Logo"><div class="lm-x" title="Remove logo">✕</div>`;
+      item.querySelector('.lm-x').addEventListener('click', async ()=>{
+        if(!confirm('Remove this logo?')) return;
+        logos = logos.filter(l=>l.id!==logo.id);
+        await saveData('logos', logos, true);
+        renderLogos();
+      });
+      grid.appendChild(item);
+    });
   }
   document.getElementById('logoAddBtn').addEventListener('click', async (e)=>{
     e.preventDefault();
