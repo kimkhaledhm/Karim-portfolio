@@ -6,7 +6,7 @@
 <title>Studio — Graphic Design Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Montserrat:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Montserrat:wght@500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;500;600&family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600&family=Poppins:wght@400;500;600&family=Work+Sans:wght@400;500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
@@ -19,16 +19,18 @@
     --glass:rgba(242,242,242,0.045);
     --glass-strong:rgba(242,242,242,0.08);
     --border:rgba(242,242,242,0.10);
+    --font-heading:'Fraunces',serif;
+    --font-body:'Inter',sans-serif;
     --ease:cubic-bezier(.16,.84,.44,1);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;min-height:100vh;position:relative;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;min-height:100vh;position:relative;}
   ::selection{background:var(--accent);color:var(--dark2);}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;}
   img{display:block;max-width:100%;}
-  h1,h2,h3{font-family:'Fraunces',serif;font-weight:400;letter-spacing:-0.01em;}
+  h1,h2,h3{font-family:var(--font-heading);font-weight:400;letter-spacing:-0.01em;}
 
   .grain{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.05;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
@@ -106,8 +108,17 @@
   .a-card .num{font-family:'Fraunces',serif;font-size:34px;color:var(--accent);}
   .a-card .lbl{font-size:12px;color:var(--muted);margin-top:6px;}
 
+  /* compact square cards used only in the Analysis page */
+  .an-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .an-card{aspect-ratio:1/1;border:1px solid var(--border);background:var(--glass);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .an-card .num{font-family:'Fraunces',serif;font-size:26px;color:var(--accent);line-height:1.1;}
+  .an-card .lbl{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4;}
+  @media (max-width:640px){ .an-grid{grid-template-columns:repeat(2,1fr);} }
+
   /* nav request badge */
-  .req-badge{display:none;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;background:#ff5050;color:#fff;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;margin-left:8px;}
+  .nav-icon-btn{position:relative;background:none;border:1px solid rgba(198,255,2,0.35);color:var(--accent);width:38px;height:38px;border-radius:100px;font-size:16px;display:none;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;}
+  .nav-icon-btn:hover{background:rgba(198,255,2,0.08);}
+  .req-badge{position:absolute;top:-6px;right:-6px;display:none;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;background:#ff5050;color:#fff;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
   .req-badge.show{display:inline-flex;}
 
   /* incoming requests list */
@@ -337,6 +348,9 @@
   .modal-overlay{position:fixed;inset:0;background:rgba(3,10,8,0.88);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;z-index:3000;padding:24px;}
   .modal-overlay.show{display:flex;animation:fadeIn 0.3s var(--ease);}
   .modal-box{width:100%;max-width:380px;border:1px solid var(--border);border-radius:18px;background:#0f0f0f;padding:32px;}
+  .modal-box-lg{position:relative;width:100%;max-width:760px;max-height:86vh;overflow-y:auto;border:1px solid var(--border);border-radius:18px;background:#0f0f0f;padding:32px;}
+  .modal-box-lg h4{font-size:20px;margin-bottom:6px;}
+  .modal-close-x{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
   .modal-box h4{font-size:20px;margin-bottom:6px;}
   .modal-box p.sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.6;}
   .modal-box .field{margin-bottom:14px;}
@@ -397,8 +411,13 @@
     <a href="#social" class="nav-link">Social</a>
     <a href="#contact" class="nav-link">Contact</a>
     <button class="admin-toggle" id="shareBtn" style="display:none;">Share Portfolio</button>
+    <button class="nav-icon-btn" id="reqBellBtn" style="display:none;" title="Service requests">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      <span class="req-badge" id="reqBadge">0</span>
+    </button>
+    <button class="admin-toggle" id="analysisBtn" style="display:none;">Analysis</button>
+    <button class="admin-toggle" id="themeBtn" style="display:none;">Theme</button>
     <button class="admin-toggle" id="adminToggle">Admin</button>
-    <span class="req-badge" id="reqBadge">0</span>
     <a href="#" class="logout-link" id="logoutLink" style="display:none;">Log out</a>
   </div>
 </nav>
@@ -666,12 +685,6 @@
       <p class="page-desc">Reach out directly, or send over the details below — it lands straight in my inbox.</p>
     </div>
 
-    <div class="admin-panel" id="requestsAdmin">
-      <h4>Incoming Requests <span id="reqCountLabel" style="color:var(--accent);"></span></h4>
-      <p style="margin-bottom:4px;color:var(--muted);font-size:13px;">Every service request submitted below is saved here — plus sent to your Telegram if it's connected.</p>
-      <div class="req-list" id="reqList"></div>
-    </div>
-
     <div class="admin-panel" id="contactAdmin">
       <h4>Manage contact channels</h4>
       <div class="admin-form">
@@ -679,7 +692,9 @@
         <div class="field"><label>Email Address</label><input type="email" id="cEmail" placeholder="hello@yourstudio.com"></div>
         <div class="field"><label>Telegram Bot Token</label><input type="text" id="cTgToken" placeholder="123456:ABC-..."></div>
         <div class="field"><label>Telegram Chat ID</label><input type="text" id="cTgChat" placeholder="e.g. 987654321"></div>
+        <div class="field span2"><label>WhatsApp Auto-Notify API Key (via CallMeBot, optional)</label><input type="text" id="cWaApiKey" placeholder="e.g. 123456"></div>
       </div>
+      <p style="margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.6;">To get a free WhatsApp notification whenever someone submits a request, use <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;">CallMeBot</a>: send "I allow callmebot to send me messages" to +34 644 95 42 75 on your WhatsApp number above, wait for the reply with your API key, then paste it here.</p>
       <div class="admin-actions"><button class="btn-small" id="contactSaveBtn">Save Contact Info</button><span class="save-msg" id="contactSaveMsg">Saved</span></div>
 
       <h4 style="margin-top:28px;">Social media links</h4>
@@ -719,6 +734,15 @@
     </div>
   </section>
 
+  <section class="view" id="view-requests">
+    <div class="page-top">
+      <a href="#home" class="back-link">← Back to work</a>
+      <h1 class="page-title">Service Requests <span id="reqCountLabel" style="color:var(--accent);font-size:16px;"></span></h1>
+      <p class="page-desc">Every request submitted through the contact form lands here, plus your Telegram/WhatsApp if connected.</p>
+    </div>
+    <div class="req-list" id="reqList"></div>
+  </section>
+
 </main>
 
 <div class="lightbox" id="lightbox">
@@ -739,6 +763,67 @@
     <div class="admin-actions">
       <button class="btn-small" id="modalSubmitBtn">Log In</button>
       <button class="btn-small secondary" id="modalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="analysisModal">
+  <div class="modal-box-lg">
+    <button class="modal-close-x" id="analysisModalClose">✕</button>
+    <h4>Analysis</h4>
+    <p class="sub">Traffic and engagement, counted once per visitor per day.</p>
+    <div style="margin:22px 0 28px;">
+      <div class="an-grid">
+        <div class="an-card"><div class="num" id="anUniqueToday">–</div><div class="lbl">Unique Visitors Today</div></div>
+        <div class="an-card"><div class="num" id="anSessionsToday">–</div><div class="lbl">Visits Today</div></div>
+        <div class="an-card"><div class="num" id="anImagesToday">–</div><div class="lbl">Images Viewed Today</div></div>
+        <div class="an-card"><div class="num" id="anAvgTimeToday">–</div><div class="lbl">Avg. Time on Site Today</div></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h4 style="margin:0;">Yearly Overview</h4>
+      <select id="anYearSelect" style="background:var(--dark2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'Space Mono',monospace;font-size:12px;"></select>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:8px;">Unique visitors per month</p>
+    <div id="anVisitorsChart" style="margin-bottom:26px;"></div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:8px;">Hours spent on site per month</p>
+    <div id="anHoursChart"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="themeModal">
+  <div class="modal-box-lg">
+    <button class="modal-close-x" id="themeModalClose">✕</button>
+    <h4>Theme Settings</h4>
+    <p class="sub">Change the colors and fonts across the whole portfolio.</p>
+    <div class="admin-form">
+      <div class="field"><label>Accent Color</label><input type="color" id="thAccent" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:none;"></div>
+      <div class="field"><label>Background Color</label><input type="color" id="thBg" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:none;"></div>
+      <div class="field"><label>Panel / Card Color</label><input type="color" id="thPanel" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:none;"></div>
+      <div class="field"><label>Text Color</label><input type="color" id="thText" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:none;"></div>
+      <div class="field">
+        <label>Heading Font</label>
+        <select id="thFontHeading" style="width:100%;padding:10px;background:var(--dark2);color:var(--text);border:1px solid var(--border);border-radius:8px;">
+          <option value="'Fraunces',serif">Fraunces</option>
+          <option value="'Playfair Display',serif">Playfair Display</option>
+          <option value="'DM Serif Display',serif">DM Serif Display</option>
+          <option value="'Space Grotesk',sans-serif">Space Grotesk</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Body Font</label>
+        <select id="thFontBody" style="width:100%;padding:10px;background:var(--dark2);color:var(--text);border:1px solid var(--border);border-radius:8px;">
+          <option value="'Inter',sans-serif">Inter</option>
+          <option value="'Poppins',sans-serif">Poppins</option>
+          <option value="'Work Sans',sans-serif">Work Sans</option>
+          <option value="'Manrope',sans-serif">Manrope</option>
+        </select>
+      </div>
+    </div>
+    <div class="admin-actions">
+      <button class="btn-small" id="themeSaveBtn">Save Theme</button>
+      <button class="btn-small secondary" id="themeResetBtn">Reset to Default</button>
+      <span class="save-msg" id="themeSaveMsg">Saved</span>
     </div>
   </div>
 </div>
@@ -820,8 +905,46 @@
     }catch(e){ return 0; }
   }
 
+  /* ---------------- per-visitor session tracking (visits_log table) ---------------- */
+  function getVisitorId(){
+    let id = localStorage.getItem('pf_visitor_id');
+    if(!id){ id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('pf_visitor_id', id); }
+    return id;
+  }
+  let analyticsRowId = null;
+  let sessionImageViews = 0;
+  let sessionActiveMs = 0;
+  let lastVisibleStart = (typeof document !== 'undefined' && document.visibilityState === 'visible') ? Date.now() : null;
+
+  async function startAnalyticsSession(){
+    const visitorId = getVisitorId();
+    const dateStr = new Date().toISOString().slice(0,10);
+    try{
+      const { data, error } = await sb.from('visits_log').insert({visitor_id:visitorId, visit_date:dateStr, duration_seconds:0, image_views:0}).select('id').single();
+      if(!error && data) analyticsRowId = data.id;
+    }catch(e){}
+  }
+  function trackImageView(){ sessionImageViews++; syncAnalyticsSession(); }
+  async function syncAnalyticsSession(){
+    if(!analyticsRowId) return;
+    let activeMs = sessionActiveMs;
+    if(document.visibilityState === 'visible' && lastVisibleStart){ activeMs += (Date.now() - lastVisibleStart); }
+    const durationSeconds = Math.round(activeMs/1000);
+    try{ await sb.from('visits_log').update({duration_seconds:durationSeconds, image_views:sessionImageViews}).eq('id', analyticsRowId); }catch(e){}
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden'){
+      if(lastVisibleStart){ sessionActiveMs += (Date.now()-lastVisibleStart); lastVisibleStart = null; }
+      syncAnalyticsSession();
+    } else if(document.visibilityState === 'visible'){
+      lastVisibleStart = Date.now();
+    }
+  });
+  setInterval(syncAnalyticsSession, 30000);
+  window.addEventListener('beforeunload', ()=>{ syncAnalyticsSession(); });
+
   let logos = [], brandProjects = [], socialRows = [], beforeAfterItems = [];
-  let contactInfo = { whatsapp:'', email:'', telegramToken:'', telegramChat:'', socialLinks:[] };
+  let contactInfo = { whatsapp:'', email:'', telegramToken:'', telegramChat:'', waApiKey:'', socialLinks:[] };
   let footerTextVal = '© 2026 Marisol Vey — Graphic Design Studio';
   let homeText = { eyebrow:'Graphic Designer &amp; Visual Storyteller', headline:'Design that||holds its *silence*.', desc:"I build brand worlds, marks, and moving image for people who'd rather say less and mean more. Based between studio and screen — currently taking new projects." };
   let personalPhotoUrl = '';
@@ -829,6 +952,8 @@
   let activeBrandId = null, editingBrandId = null;
   let catCovers = { logos:'', branding:'', social:'' };
   let serviceRequests = [];
+  const DEFAULT_THEME = { accent:'#c6ff02', bg:'#141414', panel:'#031e19', text:'#f2f2f2', fontHeading:"'Fraunces',serif", fontBody:"'Inter',sans-serif" };
+  let currentTheme = { ...DEFAULT_THEME };
 
   function seedDefaults(){
     logos = Array.from({length:14}, (_,i)=>({id:'l'+i, url: logoPlaceholder(i)}));
@@ -1023,7 +1148,7 @@
   const catCoverSocialInput = createImageInput(document.getElementById('catCoverSocialHost'), {multiple:false, maxDim:1200, quality:0.85});
 
   /* ---------------- routing ---------------- */
-  const views = ['home','logos','branding','branding-detail','social','contact'];
+  const views = ['home','logos','branding','branding-detail','social','contact','requests'];
   function route(){
     let hash = location.hash.replace('#','') || 'home';
     let base = hash;
@@ -1036,6 +1161,7 @@
     if(!views.includes(base)) base = 'home';
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     document.getElementById('view-'+base).classList.add('active');
+    if(base === 'requests') renderServiceRequests();
     window.scrollTo({top:0});
     initReveal();
   }
@@ -1085,11 +1211,13 @@
     document.getElementById('homeTextAdmin').classList.toggle('show', adminMode);
     document.getElementById('photoAdmin').classList.toggle('show', adminMode);
     document.getElementById('catCoversAdmin').classList.toggle('show', adminMode);
-    document.getElementById('requestsAdmin').classList.toggle('show', adminMode);
     document.getElementById('analyticsStrip').classList.toggle('show', adminAuthed);
     updateReqBadge();
     document.getElementById('logoutLink').style.display = adminAuthed ? 'inline' : 'none';
     document.getElementById('shareBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
+    document.getElementById('reqBellBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
+    document.getElementById('analysisBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
+    document.getElementById('themeBtn').style.display = adminAuthed ? 'inline-flex' : 'none';
     const btn = document.getElementById('adminToggle');
     if(adminAuthed){
       btn.textContent = 'Edit Mode: ' + (adminMode ? 'On' : 'Off');
@@ -1137,6 +1265,28 @@
     link.textContent = origText;
   });
   document.getElementById('modalPass').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('modalSubmitBtn').click(); } });
+
+  /* -------- Requests bell: navigates to a full scrollable page -------- */
+  document.getElementById('reqBellBtn').addEventListener('click', ()=>{
+    location.hash = '#requests';
+  });
+
+  /* -------- Analysis modal -------- */
+  document.getElementById('analysisBtn').addEventListener('click', ()=>{
+    document.getElementById('analysisModal').classList.add('show');
+    loadAndRenderAnalysis();
+  });
+  document.getElementById('analysisModalClose').addEventListener('click', ()=> document.getElementById('analysisModal').classList.remove('show'));
+  document.getElementById('analysisModal').addEventListener('click', (e)=>{ if(e.target.id==='analysisModal') e.target.classList.remove('show'); });
+
+  /* -------- Theme modal -------- */
+  document.getElementById('themeBtn').addEventListener('click', ()=>{
+    document.getElementById('themeModal').classList.add('show');
+    populateThemeForm();
+  });
+  document.getElementById('themeModalClose').addEventListener('click', ()=> document.getElementById('themeModal').classList.remove('show'));
+  document.getElementById('themeModal').addEventListener('click', (e)=>{ if(e.target.id==='themeModal') e.target.classList.remove('show'); });
+
   document.getElementById('modalSubmitBtn').addEventListener('click', async ()=>{
     modalErr.textContent = '';
     const btn = document.getElementById('modalSubmitBtn');
@@ -1567,6 +1717,7 @@
     document.getElementById('cEmail').value = contactInfo.email||'';
     document.getElementById('cTgToken').value = contactInfo.telegramToken||'';
     document.getElementById('cTgChat').value = contactInfo.telegramChat||'';
+    document.getElementById('cWaApiKey').value = contactInfo.waApiKey||'';
     const adminList = document.getElementById('socialLinksAdmin');
     adminList.innerHTML = '';
     (contactInfo.socialLinks||[]).forEach(link=>{
@@ -1586,6 +1737,7 @@
     contactInfo.email = document.getElementById('cEmail').value.trim();
     contactInfo.telegramToken = document.getElementById('cTgToken').value.trim();
     contactInfo.telegramChat = document.getElementById('cTgChat').value.trim();
+    contactInfo.waApiKey = document.getElementById('cWaApiKey').value.trim();
     await saveData('contact', contactInfo, true);
     renderContact();
     flashSaved('contactSaveMsg');
@@ -1630,6 +1782,13 @@
         const json = await res.json();
         telegramOk = !!json.ok;
       }catch(err){ telegramOk = false; }
+    }
+    if(contactInfo.whatsapp && contactInfo.waApiKey){
+      const dateStr = new Date().toLocaleString();
+      const waText = `You received a service request from ${name} on ${dateStr}. Phone: ${phone}`;
+      try{
+        await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(contactInfo.whatsapp)}&text=${encodeURIComponent(waText)}&apikey=${encodeURIComponent(contactInfo.waApiKey)}`, { mode:'no-cors' });
+      }catch(err){}
     }
 
     if(telegramOk){
@@ -1692,6 +1851,77 @@
   }
 
   document.getElementById('startProjectBtn2').addEventListener('click', trackContactClick);
+
+  /* -------- Analysis: bar chart + data aggregation -------- */
+  function formatDuration(sec){
+    const m = Math.floor(sec/60), s = sec%60;
+    return `${m}m ${s}s`;
+  }
+  function renderBarChart(container, labels, values, opts){
+    opts = opts || {};
+    const max = Math.max(1, ...values);
+    const w = 680, barGap = 6, barCount = labels.length;
+    const barW = (w - (barCount-1)*barGap) / barCount;
+    const h = 140;
+    let bars = '';
+    labels.forEach((lab,i)=>{
+      const val = values[i]||0;
+      const barH = Math.max(2, (val/max)*(h-24));
+      const x = i*(barW+barGap);
+      const y = h - barH - 20;
+      const label = val>0 ? (opts.fmt ? opts.fmt(val) : val) : '';
+      bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="var(--accent)" opacity="0.85"></rect>
+               <text x="${x+barW/2}" y="${h-6}" font-size="9" fill="var(--muted)" text-anchor="middle">${lab}</text>
+               <text x="${x+barW/2}" y="${y-4}" font-size="9" fill="var(--text)" text-anchor="middle">${label}</text>`;
+    });
+    container.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="overflow:visible;font-family:'Space Mono',monospace;">${bars}</svg>`;
+  }
+  function renderYearCharts(list, year){
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const visitorSets = Array.from({length:12}, ()=> new Set());
+    const durationSums = Array(12).fill(0);
+    list.forEach(r=>{
+      if(r.visit_date.slice(0,4) !== year) return;
+      const m = parseInt(r.visit_date.slice(5,7),10)-1;
+      if(m<0||m>11) return;
+      visitorSets[m].add(r.visitor_id);
+      durationSums[m] += (r.duration_seconds||0);
+    });
+    const visitorCounts = visitorSets.map(s=>s.size);
+    const hours = durationSums.map(s=> Math.round((s/3600)*10)/10);
+    renderBarChart(document.getElementById('anVisitorsChart'), months, visitorCounts);
+    renderBarChart(document.getElementById('anHoursChart'), months, hours, {fmt:v=>v+'h'});
+  }
+  async function loadAndRenderAnalysis(){
+    let list = [];
+    try{
+      const { data, error } = await sb.from('visits_log').select('visitor_id, visit_date, duration_seconds, image_views');
+      if(!error && data) list = data;
+    }catch(e){}
+
+    const todayStr = new Date().toISOString().slice(0,10);
+    const todayRows = list.filter(r=>r.visit_date===todayStr);
+    const uniqueToday = new Set(todayRows.map(r=>r.visitor_id)).size;
+    const sessionsToday = todayRows.length;
+    const imagesToday = todayRows.reduce((s,r)=>s+(r.image_views||0),0);
+    const totalDurToday = todayRows.reduce((s,r)=>s+(r.duration_seconds||0),0);
+    const avgSecToday = sessionsToday ? Math.round(totalDurToday/sessionsToday) : 0;
+    document.getElementById('anUniqueToday').textContent = uniqueToday;
+    document.getElementById('anSessionsToday').textContent = sessionsToday;
+    document.getElementById('anImagesToday').textContent = imagesToday;
+    document.getElementById('anAvgTimeToday').textContent = formatDuration(avgSecToday);
+
+    const currentYear = String(new Date().getFullYear());
+    const years = Array.from(new Set(list.map(r=>r.visit_date.slice(0,4))));
+    if(!years.includes(currentYear)) years.push(currentYear);
+    years.sort();
+    const sel = document.getElementById('anYearSelect');
+    const prevVal = sel.value;
+    sel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    sel.value = years.includes(prevVal) ? prevVal : currentYear;
+    renderYearCharts(list, sel.value);
+    sel.onchange = ()=> renderYearCharts(list, sel.value);
+  }
 
   /* ================= HOME TEXT (easy editing) ================= */
   function escapeHtml(s){
@@ -1773,7 +2003,7 @@
   /* ================= lightbox ================= */
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
-  function openLightbox(src){ lightboxImg.src = src; lightbox.classList.add('show'); }
+  function openLightbox(src){ lightboxImg.src = src; lightbox.classList.add('show'); trackImageView(); }
   document.getElementById('lightboxClose').addEventListener('click', ()=> lightbox.classList.remove('show'));
   lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.classList.remove('show'); });
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ lightbox.classList.remove('show'); modal.classList.remove('show'); } });
@@ -1803,10 +2033,49 @@
     flashSaved('catCoversSaveMsg');
   });
 
+  /* -------- Theme customization -------- */
+  function applyTheme(theme){
+    const root = document.documentElement.style;
+    root.setProperty('--accent', theme.accent);
+    root.setProperty('--bg', theme.bg);
+    root.setProperty('--dark2', theme.panel);
+    root.setProperty('--text', theme.text);
+    root.setProperty('--font-heading', theme.fontHeading);
+    root.setProperty('--font-body', theme.fontBody);
+  }
+  function populateThemeForm(){
+    document.getElementById('thAccent').value = currentTheme.accent;
+    document.getElementById('thBg').value = currentTheme.bg;
+    document.getElementById('thPanel').value = currentTheme.panel;
+    document.getElementById('thText').value = currentTheme.text;
+    document.getElementById('thFontHeading').value = currentTheme.fontHeading;
+    document.getElementById('thFontBody').value = currentTheme.fontBody;
+  }
+  document.getElementById('themeSaveBtn').addEventListener('click', async ()=>{
+    currentTheme = {
+      accent: document.getElementById('thAccent').value,
+      bg: document.getElementById('thBg').value,
+      panel: document.getElementById('thPanel').value,
+      text: document.getElementById('thText').value,
+      fontHeading: document.getElementById('thFontHeading').value,
+      fontBody: document.getElementById('thFontBody').value
+    };
+    applyTheme(currentTheme);
+    await saveData('themeSettings', currentTheme, true);
+    flashSaved('themeSaveMsg');
+  });
+  document.getElementById('themeResetBtn').addEventListener('click', async ()=>{
+    currentTheme = { ...DEFAULT_THEME };
+    applyTheme(currentTheme);
+    populateThemeForm();
+    await saveData('themeSettings', currentTheme, true);
+    flashSaved('themeSaveMsg');
+  });
+
   /* ================= init ================= */
   async function init(){
     seedDefaults();
-    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter, storedCatCovers, storedRequests] = await Promise.all([
+    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter, storedCatCovers, storedRequests, storedTheme] = await Promise.all([
       loadData('logos', null, true),
       loadData('branding', null, true),
       loadData('socialRows', null, true),
@@ -1818,7 +2087,8 @@
       loadData('photoBadges', null, true),
       loadData('beforeAfter', null, true),
       loadData('catCovers', null, true),
-      loadData('serviceRequests', null, true)
+      loadData('serviceRequests', null, true),
+      loadData('themeSettings', null, true)
     ]);
     if(storedLogos) logos = storedLogos;
     if(storedBranding) brandProjects = storedBranding;
@@ -1842,6 +2112,7 @@
       if(catCovers.social) catCoverSocialInput.setValues([catCovers.social]);
     }
     if(storedRequests) serviceRequests = storedRequests;
+    if(storedTheme){ currentTheme = { ...DEFAULT_THEME, ...storedTheme }; applyTheme(currentTheme); }
     document.getElementById('footerTextInput').value = footerTextVal;
 
     renderLogos();
@@ -1859,6 +2130,7 @@
     route();
     initReveal();
     trackVisit().then(refreshAnalytics);
+    startAnalyticsSession();
   }
   init();
 
