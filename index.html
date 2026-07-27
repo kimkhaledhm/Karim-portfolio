@@ -302,6 +302,7 @@
   .ba-slider{
     position:relative;width:100%;aspect-ratio:1080/1350;border-radius:18px;overflow:hidden;
     border:1px solid var(--border);cursor:ew-resize;user-select:none;-webkit-user-select:none;background:var(--dark2);
+    touch-action:none;
   }
   .ba-slider img{position:absolute;top:0;left:0;width:var(--ba-w, 100%);height:100%;object-fit:cover;display:block;max-width:none;pointer-events:none;}
   .ba-after-wrap{position:absolute;inset:0;overflow:hidden;}
@@ -1648,8 +1649,8 @@
       const rect = el.getBoundingClientRect();
       return ((clientX - rect.left) / rect.width) * 100;
     }
-    el.addEventListener('pointerdown', (e)=>{ dragging = true; try{ el.setPointerCapture(e.pointerId); }catch(err){} setPos(pointerToPercent(e.clientX)); });
-    el.addEventListener('pointermove', (e)=>{ if(!dragging) return; setPos(pointerToPercent(e.clientX)); });
+    el.addEventListener('pointerdown', (e)=>{ dragging = true; try{ el.setPointerCapture(e.pointerId); }catch(err){} setPos(pointerToPercent(e.clientX)); e.preventDefault(); });
+    el.addEventListener('pointermove', (e)=>{ if(!dragging) return; setPos(pointerToPercent(e.clientX)); e.preventDefault(); });
     el.addEventListener('pointerup', ()=>{ dragging = false; });
     el.addEventListener('pointerleave', ()=>{ dragging = false; });
   }
