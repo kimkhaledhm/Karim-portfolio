@@ -285,8 +285,9 @@
   body.admin-on .social-row-head .row-del-btn{display:flex;}
   .social-row-head .row-del-btn:hover{background:#ff4747;border-color:#ff4747;}
   .carousel-wrap{position:relative;max-width:1000px;margin:0 auto;}
-  .carousel-track{display:flex;gap:26px;overflow-x:hidden;scroll-behavior:smooth;padding:10px 0;}
-  .post-card{flex:none;width:290px;aspect-ratio:1080/1350;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer;background:var(--dark2);}
+  .carousel-track{display:flex;gap:26px;overflow-x:auto;scroll-behavior:smooth;padding:10px 0;-webkit-overflow-scrolling:touch;touch-action:pan-x;scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:x proximity;}
+  .carousel-track::-webkit-scrollbar{display:none;}
+  .post-card{flex:none;width:290px;aspect-ratio:1080/1350;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer;background:var(--dark2);scroll-snap-align:start;}
   .post-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s var(--ease);}
   .post-card:hover img{transform:scale(1.08);}
   .post-card .shade{position:absolute;inset:0;box-shadow:inset 0 -80px 60px -20px rgba(0,0,0,0.5);opacity:0;transition:opacity 0.4s;}
