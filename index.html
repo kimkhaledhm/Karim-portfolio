@@ -1161,7 +1161,7 @@
     if(!views.includes(base)) base = 'home';
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     document.getElementById('view-'+base).classList.add('active');
-    if(base === 'requests') renderServiceRequests();
+    if(base === 'requests') fetchServiceRequests();
     window.scrollTo({top:0});
     initReveal();
   }
@@ -1192,7 +1192,7 @@
     try{
       const { data:{ session } } = await sb.auth.getSession();
       if(session && session.user && ADMIN_EMAILS.includes(session.user.email)){
-        adminAuthed = true; adminMode = true; applyAdminUI(); refreshAnalytics();
+        adminAuthed = true; adminMode = true; applyAdminUI(); refreshAnalytics(); fetchServiceRequests();
       }
     }catch(e){}
   }
@@ -1298,6 +1298,7 @@
       adminAuthed = true; adminMode = true;
       applyAdminUI();
       refreshAnalytics();
+      fetchServiceRequests();
       modal.classList.remove('show');
     }catch(e){
       modalErr.textContent = 'Login failed — check your connection and try again.';
@@ -1765,11 +1766,14 @@
     }
     const btn = e.target; btn.textContent = 'Sending…';
 
-    // Always save the request first, so it's never lost even if Telegram fails or isn't set up.
-    const reqObj = { id:'req'+Date.now()+Math.random().toString(36).slice(2,7), name, phone, email, details, ts: new Date().toISOString(), read:false };
-    serviceRequests.unshift(reqObj);
-    await saveData('serviceRequests', serviceRequests, true);
-    renderServiceRequests();
+    // Save to the dedicated service_requests table — anonymous visitors are allowed
+    // to INSERT here (but not read/edit), unlike the shared content table.
+    let saveOk = false;
+    try{
+      const { error } = await sb.from('service_requests').insert({ name, phone, email, details });
+      saveOk = !error;
+      if(error) console.error('request save failed', error);
+    }catch(err){ saveOk = false; console.error('request save failed', err); }
 
     let telegramOk = false;
     if(contactInfo.telegramToken && contactInfo.telegramChat){
@@ -1791,10 +1795,12 @@
       }catch(err){}
     }
 
-    if(telegramOk){
+    if(saveOk){
       statusEl.textContent = 'Sent — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
+      if(adminAuthed) fetchServiceRequests();
     } else {
-      statusEl.textContent = 'Request received — I\'ll be in touch shortly.'; statusEl.className = 'service-status ok';
+      statusEl.textContent = telegramOk ? 'Sent via Telegram — but please also try WhatsApp or email as backup.' : 'Something went wrong — please try WhatsApp or email instead.';
+      statusEl.className = telegramOk ? 'service-status ok' : 'service-status err';
     }
     ['svName','svPhone','svEmail','svDetails'].forEach(id=>document.getElementById(id).value='');
     trackContactClick();
@@ -1808,6 +1814,17 @@
     badge.classList.toggle('show', adminAuthed && unread > 0);
     const label = document.getElementById('reqCountLabel');
     if(label) label.textContent = unread > 0 ? `— ${unread} new` : '';
+  }
+
+  async function fetchServiceRequests(){
+    try{
+      const { data, error } = await sb.from('service_requests').select('*').order('created_at', { ascending:false });
+      if(error || !data){ serviceRequests = []; }
+      else{
+        serviceRequests = data.map(r => ({ id:r.id, name:r.name, phone:r.phone, email:r.email, details:r.details, ts:r.created_at, read:r.is_read }));
+      }
+    }catch(e){ serviceRequests = []; }
+    renderServiceRequests();
   }
 
   function renderServiceRequests(){
@@ -1835,14 +1852,14 @@
         </div>
       `;
       el.querySelector('[data-act="delete"]').addEventListener('click', async ()=>{
+        try{ await sb.from('service_requests').delete().eq('id', r.id); }catch(err){ console.error(err); }
         serviceRequests = serviceRequests.filter(x=>x.id!==r.id);
-        await saveData('serviceRequests', serviceRequests, true);
         renderServiceRequests();
       });
       const readBtn = el.querySelector('[data-act="read"]');
       if(readBtn) readBtn.addEventListener('click', async ()=>{
+        try{ await sb.from('service_requests').update({ is_read:true }).eq('id', r.id); }catch(err){ console.error(err); }
         r.read = true;
-        await saveData('serviceRequests', serviceRequests, true);
         renderServiceRequests();
       });
       list.appendChild(el);
@@ -2075,7 +2092,7 @@
   /* ================= init ================= */
   async function init(){
     seedDefaults();
-    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter, storedCatCovers, storedRequests, storedTheme] = await Promise.all([
+    const [storedLogos, storedBranding, storedSocialRows, storedSocialLegacy, storedContact, storedFooter, storedHomeText, storedPhoto, storedBadges, storedBeforeAfter, storedCatCovers, storedTheme] = await Promise.all([
       loadData('logos', null, true),
       loadData('branding', null, true),
       loadData('socialRows', null, true),
@@ -2087,7 +2104,6 @@
       loadData('photoBadges', null, true),
       loadData('beforeAfter', null, true),
       loadData('catCovers', null, true),
-      loadData('serviceRequests', null, true),
       loadData('themeSettings', null, true)
     ]);
     if(storedLogos) logos = storedLogos;
@@ -2111,7 +2127,6 @@
       if(catCovers.branding) catCoverBrandingInput.setValues([catCovers.branding]);
       if(catCovers.social) catCoverSocialInput.setValues([catCovers.social]);
     }
-    if(storedRequests) serviceRequests = storedRequests;
     if(storedTheme){ currentTheme = { ...DEFAULT_THEME, ...storedTheme }; applyTheme(currentTheme); }
     document.getElementById('footerTextInput').value = footerTextVal;
 
